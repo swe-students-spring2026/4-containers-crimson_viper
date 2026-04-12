@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Home</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+{% block content %}
+<div class="screen">
+
+    <header class="hero">
+        <h1>User’s Digital Diary</h1>
+    </header>
+
+    <main class="main-content">
+
+        <section class="week-card">
+            <div>
+                <p class="week-label">Current Week</p>
+                <h2 class="week-range">Feb 18 – Feb 24</h2>
+            </div>
+            <p class="streak">3 days streak</p>
+        </section>
+
+        <section class="calendar-strip">
+            <div class="calendar-day active">
+                <span class="dow">TUE</span>
+                <span class="date-num">19</span>
+            </div>
+            <div class="calendar-day">
+                <span class="dow">WED</span>
+                <span class="date-num">20</span>
+            </div>
+            <div class="calendar-day">
+                <span class="dow">THU</span>
+                <span class="date-num">21</span>
+            </div>
+            <div class="calendar-day">
+                <span class="dow">FRI</span>
+                <span class="date-num">22</span>
+            </div>
+            <div class="calendar-day">
+                <span class="dow">SAT</span>
+                <span class="date-num">23</span>
+            </div>
+            <div class="calendar-day">
+                <span class="dow">SUN</span>
+                <span class="date-num">24</span>
+            </div>
+        </section>
+
+        <section class="prompt-card">
+            <h3>Why journal?</h3>
+            <p>Journaling helps boost productivity through daily-small step goal setting</p>
+            <a href="/day" class="prompt-link">Start now →</a>
+        </section>
+
+        <hr class="divider">
+
+        <section class="plans-section">
+            <h3 class="section-title">What are your plans for this week?</h3>
+
+            <div class="goal-header">
+                <span>Goals</span>
+                <span>Time</span>
+            </div>
+
+            {% for goal in goals %}
+            <div class="goal-row">
+                <span class="goal-name">{{ goal.name }}</span>
+                <span class="goal-time">{{ goal.deadline }}</span>
+            </div>
+            {% else %}
+            <div class="goal-row empty-row">
+                <span>No goals set yet.</span>
+            </div>
+            {% endfor %}
+
+            <p class="more-items">+ 9 more items</p>
+        </section>
+
+        <hr class="divider">
+
+        <section class="entries-section">
+            <h3 class="section-title">See your other entries</h3>
+
+            <div class="entries-grid">
+                {% for entry in entries %}
+                <a href="/day/{{ entry.date }}" class="entry-box {% if loop.first %}selected{% endif %}">
+                    <span class="entry-month">
+                        {% if loop.first %}FEB{% else %}WED{% endif %}
+                    </span>
+                    <span class="entry-day">{{ entry.date[-2:] }}</span>
+                </a>
+                {% else %}
+                <div class="entry-box">
+                    <span class="entry-month">NO</span>
+                    <span class="entry-day">DATA</span>
+                </div>
+                {% endfor %}
+
+                <a href="#" class="entry-box load-more">
+                    <span>Load more→</span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item active">Home</a>
+        <a href="/day" class="nav-item">Day</a>
+        <a href="/history" class="nav-item">History</a>
+    </nav>
+
+</div>
+{% endblock %}
+</body>
+</html>
