@@ -84,7 +84,9 @@ def add_task(username, date, task_data):
             {"$set": {"tasks": [task_data]}},
             upsert=True
         )
-        return result.upserted_id or True
+        if result.upserted_id:
+            return str(result.upserted_id)
+        return True
     
 def edit_task(username, date, task_index, updated_task):
     """
