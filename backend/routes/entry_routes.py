@@ -11,6 +11,9 @@ def create():
     date = data["date"]
     entry_data = data["entry_data"]
     entry_id = create_entry(username, date, entry_data)
+    # Convert ObjectId to string if necessary
+    if hasattr(entry_id, "__str__") and not isinstance(entry_id, (bool, int, str)):
+        entry_id = str(entry_id)
     return jsonify({"id": entry_id})
 
 @entry_bp.route("/entries/<username>", methods=["GET"])
