@@ -42,3 +42,28 @@ print(res.json())
 print("\nDeleting entry...")
 res = requests.delete(f"{BASE}/entries/{USERNAME}/{DATE}/0")
 print(res.json())
+
+# 6. ADD a task
+print("\nAdding task...")
+task_data = {
+    "title": "Finish backend routes",
+    "deadline": "2026-04-12 23:59",
+    "done": False
+}
+res = requests.post(f"{BASE}/tasks/{USERNAME}/{DATE}", json=task_data)
+print(res.json())
+
+# 7. UPDATE task at index 0
+print("\nUpdating task...")
+updated_task = {
+    "title": "Finish backend routes and test them",
+    "deadline": "2026-04-12 23:59",
+    "done": True
+}
+res = requests.put(f"{BASE}/tasks/{USERNAME}/{DATE}/0", json=updated_task)
+print(res.json())
+
+# 8. DELETE task at index 0
+print("\nDeleting task...")
+res = requests.delete(f"{BASE}/tasks/{USERNAME}/{DATE}/0")
+print(res.json())
