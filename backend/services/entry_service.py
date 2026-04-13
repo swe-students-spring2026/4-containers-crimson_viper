@@ -34,7 +34,7 @@ def get_entry_by_date(username, date):
 
 def update_entry(username, date, entry_index, updated_data):
     """
-    Updates a specific journal entry (by index) in the day's journal_entries list.
+    Updates a specific journal entry in the day's journal_entries list.
     """
     key = f"journal_entries.{entry_index}"
     result = entries_collection.update_one(
@@ -45,7 +45,7 @@ def update_entry(username, date, entry_index, updated_data):
 
 def delete_entry(username, date, entry_index):
     """
-    Deletes a specific journal entry (by index) from the day's journal_entries list.
+    Deletes a specific journal entry from the day's journal_entries list.
     """
     day = entries_collection.find_one({"username": username, "date": date})
     if not day or "journal_entries" not in day or entry_index >= len(day["journal_entries"]):
