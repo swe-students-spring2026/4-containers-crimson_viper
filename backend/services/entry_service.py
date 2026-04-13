@@ -66,3 +66,49 @@ def delete_entry(username, date, entry_index):
         {"$set": {"journal_entries": entries}}
     )
     return result.modified_count
+
+def add_task(username, date, task_data):
+    """
+    Adds a task to the day's tasks list for the user.
+    """
+    day = entries_collection.find_one({"username": username, "date": date})
+    if day:
+        result = entries_collection.update_one(
+            {"username": username, "date": date},
+            {"$push": {"tasks": task_data}}
+        )
+        return result.modified_count
+    else:
+        result = entries_collection.update_one(
+            {"username": username, "date": date},
+            {"$set": {"tasks": [task_data]}},
+            upsert=True
+        )
+        return result.upserted_id or True
+    
+def edit_task(username, date, task_index, updated_task):
+    """
+    Updates a specific task in the day's tasks list.
+    """
+    key = f"tasks.{task_index}"
+    result = entries_collection.update_one(
+        {"username": username, "date": date},
+        {"$set": {key: updated_task}}
+    )
+    return result.modified_count
+    
+
+def delete_task(username, date, task_index):
+    """
+    Deletes a specific task from the day's tasks list.
+    """
+    day = entries_collection.find_one({"username": username, "date": date})
+    if not day or "tasks" not in day or task_index >= len(day["tasks"]):
+        return 0
+    tasks = day["tasks"]
+    tasks.pop(task_index)
+    result = entries_collection.update_one(
+        {"username": username, "date": date},
+        {"$set": {"tasks": tasks}}
+    )
+    return result.modified_count
