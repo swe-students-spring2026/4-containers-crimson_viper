@@ -28,7 +28,7 @@ print("\nGetting one day's entry...")
 res = requests.get(f"{BASE}/entries/{USERNAME}/{DATE}")
 print(res.json())
 
-# 4. UPDATE the first journal entry (index 0)
+# 4. UPDATE the first journal entry 
 print("\nUpdating entry...")
 updated_entry = {
     "transcript": "Updated transcript",
@@ -38,7 +38,38 @@ updated_entry = {
 res = requests.put(f"{BASE}/entries/{USERNAME}/{DATE}/0", json=updated_entry)
 print(res.json())
 
-# 5. DELETE the first journal entry (index 0)
+# 5. DELETE the first journal entry 
 print("\nDeleting entry...")
 res = requests.delete(f"{BASE}/entries/{USERNAME}/{DATE}/0")
+print(res.json())
+
+# 6. ADD a task
+task_data = {
+    "title": "Finish backend routes",
+    "deadline": "2026-04-12 23:59",
+    "done": False
+}
+requests.post(f"{BASE}/tasks/{USERNAME}/{DATE}", json=task_data)
+
+print("\nUser entry after adding task:")
+res = requests.get(f"{BASE}/entries/{USERNAME}/{DATE}")
+print(res.json())
+
+# 7. UPDATE task 
+updated_task = {
+    "title": "Finish backend routes and test them",
+    "deadline": "2026-04-12 23:59",
+    "done": True
+}
+requests.put(f"{BASE}/tasks/{USERNAME}/{DATE}/0", json=updated_task)
+
+print("\nUser entry after updating task:")
+res = requests.get(f"{BASE}/entries/{USERNAME}/{DATE}")
+print(res.json())
+
+# 8. DELETE task 
+requests.delete(f"{BASE}/tasks/{USERNAME}/{DATE}/0")
+
+print("\nUser entry after deleting task:")
+res = requests.get(f"{BASE}/entries/{USERNAME}/{DATE}")
 print(res.json())

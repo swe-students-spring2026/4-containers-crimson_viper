@@ -37,3 +37,41 @@ def update(username, date, entry_index):
 def delete(username, date, entry_index):
     delete_entry(username, date, entry_index)
     return jsonify({"msg": "deleted"})
+
+@entry_bp.route("/tasks/<username>/<date>", methods=["POST"])
+def create_task(username, date):
+    task_data = request.json
+    result = add_task(username, date, task_data)
+    return jsonify({"result": result})
+
+@entry_bp.route("/tasks/<username>/<date>/<int:task_index>", methods=["PUT"])
+def update_task(username, date, task_index):
+    updated_task = request.json
+    result = edit_task(username, date, task_index, updated_task)
+    return jsonify({"result": result})
+
+@entry_bp.route("/tasks/<username>/<date>/<int:task_index>", methods=["DELETE"])
+def remove_task(username, date, task_index):
+    result = delete_task(username, date, task_index)
+    return jsonify({"result": result})
+
+@entry_bp.route("/tasks/<username>/<date>", methods=["POST"])
+def create_task_route(username, date):
+    task_data = request.json
+    result = add_task(username, date, task_data)
+    return jsonify({"msg": "task added", "result": str(result)})
+
+@entry_bp.route("/tasks/<username>/<date>/<int:task_index>", methods=["PUT"])
+def update_task_route(username, date, task_index):
+    updated_task = request.json
+    result = edit_task(username, date, task_index, updated_task)
+    if not result:
+        return jsonify({"error": "Task not found"}), 404
+    return jsonify({"msg": "task updated"})
+
+@entry_bp.route("/tasks/<username>/<date>/<int:task_index>", methods=["DELETE"])
+def delete_task_route(username, date, task_index):
+    result = delete_task(username, date, task_index)
+    if not result:
+        return jsonify({"error": "Task not found"}), 404
+    return jsonify({"msg": "task deleted"})
