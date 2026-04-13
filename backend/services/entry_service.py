@@ -2,17 +2,26 @@ from models.db import entries_collection
 from ml.summarizer import summarize
 
 def create_entry(username, date, entry_data):
-    """
-    Adds a journal entry to the user's day document.
-    If the day does not exist, this will create it.
-    """
     entry_data["summary"] = summarize(entry_data.get("transcript", ""))
-    result = entries_collection.update_one(
-        {"username": username, "date": date},
-        {"$push": {"journal_entries": entry_data}},
-        upsert=True
-    )
-    return result.upserted_id or True
+    day = entries_collection.find_one({"username": username, "date": date})
+    if day:
+        # Check for duplicate timestamp
+        for entry in day.get("journal_entries", []):
+            if entry.get("timestamp") == entry_data.get("timestamp"):
+                return False  
+        # Append if there's no duplicate
+        result = entries_collection.update_one(
+            {"username": username, "date": date},
+            {"$push": {"journal_entries": entry_data}}
+        )
+        return result.modified_count
+    else:
+        result = entries_collection.update_one(
+            {"username": username, "date": date},
+            {"$set": {"journal_entries": [entry_data]}},
+            upsert=True
+        )
+        return result.upserted_id or True
 
 def get_all_entries(username):
     """
