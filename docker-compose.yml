@@ -1,0 +1,24 @@
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+
+  machine-learning-client:
+    build: ./machine-learning-client
+    container_name: machine-learning-client
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/crimson_viper
+
+  web-app:
+    build: ./web-app
+    container_name: web-app
+    ports:
+      - "5001:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/crimson_viper
