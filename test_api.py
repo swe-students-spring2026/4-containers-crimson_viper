@@ -42,15 +42,3 @@ print(res.json())
 print("\nDeleting entry...")
 res = requests.delete(f"{BASE}/entries/{USERNAME}/{DATE}/0")
 print(res.json())
-
-# 4. UPDATE entry
-print("\nUpdating entry...")
-res = requests.put(f"{BASE}/entries/2026-04-12", json={
-    "mood": "very productive"
-})
-print(res.json())
-
-# 5. DELETE entry
-print("\nDeleting entry...")
-res = requests.delete(f"{BASE}/entries/2026-04-12")
-print(res.json())
