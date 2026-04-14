@@ -51,22 +51,22 @@
                 <span>Time</span>
             </div>
             {% if entries %}
-               
+
                 {% for entry in entries %}
-                    {% for todo in entry.todos %}
-                    
+                    {% for task in entry.tasks %}
                         <div class="goal-row">
-                            <span class="goal-name">{{ todo.task }}</span>
-                            <span class="goal-time">{{ entry.date }}</span>
+                            <span class="goal-name">{{ task.title }}</span>
+                            <span class="goal-time">{{ task.deadline }}</span>
                         </div>
                     {% endfor %}
                 {% endfor %}
+
             {% else %}
             <div class="goal-row empty-row">
                 <span>No goals set yet.</span>
             </div>
-            {% endif %}
-            <p class="more-items">+ {{ entries|length }} more items</p>
+             {% endif %}
+
         </section>
 
         <hr class="divider">

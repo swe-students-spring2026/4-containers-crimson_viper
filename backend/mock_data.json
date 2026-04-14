@@ -14,20 +14,22 @@
         "summary": "Evening walk."
       }
     ],
-    "todos": [
+    "tasks": [
       {
-        "task": "Buy groceries",
-        "completed": false
+        "title": "Buy groceries",
+        "deadline": "2026-04-13 18:00",
+        "done": false
       },
       {
-        "task": "Read a book",
-        "completed": true
+        "title": "Read a book",
+        "deadline": "2026-04-13 21:00",
+        "done": true
       }
     ]
   },
   {
     "username": "test_user",
-    "date": "2026-04-11",
+    "date": "2026-04-14",
     "journal_entries": [
       {
         "transcript": "Had a meeting with the team.",
@@ -35,27 +37,29 @@
         "summary": "Team meeting."
       }
     ],
-    "todos": [
+    "tasks": [
       {
-        "task": "Call mom",
-        "completed": false
+        "title": "Call mom",
+        "deadline": "2026-04-14 19:00",
+        "done": false
       }
     ]
   },
   {
     "username": "test_user",
-    "date": "2026-04-12",
+    "date": "2026-04-15",
     "journal_entries": [
       {
-        "transcript": "Had a meeting with the team.",
-        "mood": "neutral",
-        "summary": "Team meeting."
+        "transcript": "Worked on backend routes and tested API endpoints.",
+        "mood": "focused",
+        "summary": "Backend work and API testing."
       }
     ],
-    "todos": [
+    "tasks": [
       {
-        "task": "Call mom",
-        "completed": false
+        "title": "Call dad",
+        "deadline": "2026-04-15 20:00",
+        "done": false
       }
     ]
   }
