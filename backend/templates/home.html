@@ -77,7 +77,7 @@
             <div class="entries-grid">
                 {% if entries %}
                     {% for entry in entries %}
-                        <a href="/day/{{ entry.date }}" class="entry-box {% if loop.first %}selected{% endif %}">
+                        <a href="{{ url_for('pages.day', date=entry.date, username=username) }}" class="entry-box {% if loop.first %}selected{% endif %}">
                             <span class="entry-month">
                                 {{ entry.date[5:7]|upper }}
                             </span>
@@ -104,9 +104,9 @@
             </div>
         </section>
         <nav class="bottom-nav">
-            <a href="/" class="nav-item active">Home</a>
-            <a href="/day" class="nav-item">Day</a>
-            <a href="/history" class="nav-item">History</a>
+            <a href="{{ url_for('pages.home', username=username) }}" class="nav-item active">Home</a>
+            <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">Day</a>
+            <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">Reflect</a>
         </nav>
     </main>
 
