@@ -7,7 +7,7 @@ def create_entry(username, date, entry_data):
     entry_data = dict(entry_data)
     entry_data["entry_id"] = entry_data.get("entry_id") or str(uuid4())
     entry_data["created_at"] = entry_data.get("created_at") or datetime.utcnow().isoformat()
-    entry_data["summary"] = summarize(entry_data.get("transcript", ""))
+    # entry_data["summary"] = summarize(entry_data.get("transcript", ""))
 
     result = entries_collection.update_one(
         {"username": username, "date": date},
