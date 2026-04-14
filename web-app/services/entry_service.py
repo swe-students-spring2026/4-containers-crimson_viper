@@ -2,7 +2,6 @@ from datetime import datetime
 from uuid import uuid4
 
 from models.db import entries_collection
-from ml.summarizer import summarize
 
 def create_entry(username, date, entry_data):
     entry_data = dict(entry_data)

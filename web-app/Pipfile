@@ -6,6 +6,12 @@ name = "pypi"
 [packages]
 pylint = "*"
 black = "*"
+flask = "*"
+flask-cors = "*"
+pymongo = "*"
+python-dotenv = "*"
+requests = "*"
+flask-login = "*"
 
 [dev-packages]
 
