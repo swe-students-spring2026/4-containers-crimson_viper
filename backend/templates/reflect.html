@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Reflect{% endblock %}
+
+{% block content %}
+{% set entry_index = existing_entry_index if existing_entry_index is defined else none %}
+{% set has_existing_entry = existing_entry is defined and existing_entry and entry_index is not none %}
+
+<div class="screen">
+    <header class="hero">
+        <h1>Reflect</h1>
+        <p class="hero-subtitle">{{ date }}</p>
+    </header>
+
+    <main class="main-content">
+        <section class="prompt-card">
+            <h3>Prompt</h3>
+            <p>{{ current_prompt }}</p>
+        </section>
+        
+        <section class="content-card">
+            <form method="POST" action="{% if has_existing_entry %}{{ url_for('pages.update_entry_page', date=date, entry_index=entry_index) }}{% else %}{{ url_for('pages.create_entry_page') }}{% endif %}" class="entry-form">
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input type="hidden" name="entry_type" value="prompt">
+                <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
+
+                <label class="form-label">How do you feel right now?</label>
+                <input type="range" name="mood_score" min="1" max="10" value="{{ mood_score|default(5) }}">
+
+                <label class="form-label">How did I handle stress or frustrations today?</label>
+                <input type="range" name="stress_score" min="1" max="10" value="{{ stress_score|default(5) }}">
+
+                <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
+
+                <div class="voice-bar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10a7 7 0 0 0 14 0"></path>
+                        <line x1="12" y1="17" x2="12" y2="22"></line>
+                    </svg>
+                </div>
+
+                <button type="submit" class="primary-button">Save</button>
+            </form>
+        </section>
+
+        <section class="content-card">
+            <div class="section-header">
+                <h3 class="section-title">More prompts</h3>
+            </div>
+            <div class="reflect-actions">
+                {% for prompt in prompts %}
+                <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt', prompt=prompt) }}" class="secondary-link">Prompt {{ loop.index }} </a>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
+        <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">Day</a>
+        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item active">Reflect</a>
+    </nav>
+</div>
+{% endblock %}

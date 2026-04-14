@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Day View{% endblock %}
+
+{% block content %}
+{% set day_doc = entry if entry else {} %}
+{% set journal_entries = day_doc.journal_entries if day_doc and day_doc.journal_entries else [] %}
+{% set task_list = day_doc.tasks if day_doc and day_doc.tasks else [] %}
+
+<div class="screen">
+    <header class="day-header-card">
+        <div class="day-switcher">
+            <a href="{{ url_for('pages.today', username=username, date=prev_date) }}" class="day-arrow">‹</a>
+            <div class="day-heading">
+                <p class="day-label">Day View</p>
+                <h1>{{ date }}</h1>
+            </div>
+            <a href="{{ url_for('pages.today', username=username, date=next_date) }}" class="day-arrow">›</a>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="content-card">
+            <div class="section-header">
+                <h3 class="section-title">TODAY’S TASKS</h3>
+            </div>
+
+            {% if task_list %}
+            <div class="task-list">
+                {% for task in task_list %}
+                {% set task_title = task.title if task.title else task.name if task.name else 'Untitled task' %}
+                <div class="task-row">
+                    <div class="task-copy">
+                        <span class="task-name">{{ task_title }}</span>
+                        <div class="reflect-actions">
+                            <form method="POST" action="{{ url_for('pages.delete_task_page', date=date, task_index=loop.index0) }}">
+                                <input type="hidden" name="username" value="{{ username }}">
+                                <button type="submit" class="text-button danger-button">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state-card">
+                <p class="empty-text">No tasks yet for this day.</p>
+            </div>
+            {% endif %}
+
+            <form method="POST" action="{{ url_for('pages.create_task_page') }}" class="entry-form inline-form">
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input name="title" placeholder="+ Add Item" required>
+                <button type="submit" class="primary-button">Add Task</button>
+            </form>
+        </section>
+
+        <section class="content-card">
+            <div class="section-header">
+                <h3 class="section-title">WRITE</h3>
+            </div>
+            <form method="POST" action="{{ url_for('pages.create_entry_page') }}" class="entry-form">
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="date" value="{{ date }}">
+
+                <textarea id="journal-textarea" name="transcript" placeholder="Write your Journal Entry"></textarea>
+
+                <div class="voice-bar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10a7 7 0 0 0 14 0"></path>
+                        <line x1="12" y1="17" x2="12" y2="22"></line>
+                    </svg>
+                </div>
+
+                <button type="submit" class="primary-button">Save</button>
+            </form>
+
+        </section>
+
+        <section class="content-card">
+            <div class="section-header">
+                <h3 class="section-title">REFLECT</h3>
+            </div>
+            <div class="reflect-actions">
+                <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="secondary-link">Reflect on a new prompt</a>
+                <a href="{{ url_for('pages.reflect', username=username, date=date, mode='continue') }}" class="secondary-link">Continue previous thoughts</a>
+            </div>
+        </section>
+
+        <section class="content-card entries-section">
+            <div class="section-header">
+                <h3 class="section-title">JOURNAL ENTRIES</h3>
+            </div>
+
+            {% if journal_entries %}
+            <div class="journal-list">
+                {% for journal_entry in journal_entries %}
+                <div class="journal-card">
+                    <div class="journal-card-top">
+                        <span class="journal-index">Entry {{ loop.index }}</span>
+                        <span class="entry-meta">{{ journal_entry.entry_type|default('journal') }}</span>
+                    </div>
+                    <p class="journal-summary">{{ journal_entry.transcript }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state-card">
+                <p class="empty-text">No journal entries yet for this day.</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
+        <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item active">Day</a>
+        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">Reflect</a>
+    </nav>
+</div>
+{% endblock %}
