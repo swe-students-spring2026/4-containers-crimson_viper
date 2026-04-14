@@ -6,6 +6,10 @@ name = "pypi"
 [packages]
 
 [dev-packages]
+flask = "*"
+flask-cors = "*"
+pymongo = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.13"
