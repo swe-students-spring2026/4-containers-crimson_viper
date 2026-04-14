@@ -6,8 +6,8 @@ WORKDIR /app
 COPY Pipfile Pipfile.lock ./
 
 # use system so that we don't have a container inside another container
-RUN pip install pipenv && pipenv install --system
+RUN pip install pipenv && pipenv install --deploy
 COPY . .
 EXPOSE 5000
 
-CMD ["python", "app.py"]
+CMD ["pipenv", "run", "python", "app.py"]

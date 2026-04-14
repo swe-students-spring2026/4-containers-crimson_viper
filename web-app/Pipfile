@@ -6,14 +6,15 @@ name = "pypi"
 [packages]
 pylint = "*"
 black = "*"
-flask = "*"
 flask-cors = "*"
 pymongo = "*"
 python-dotenv = "*"
 requests = "*"
 flask-login = "*"
+click = "*"
+flask = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.10"
+python_version = "3.9"
