@@ -38,6 +38,8 @@ body {
     justify-content: center;
     text-align: center;
     padding: 20px 24px;
+    background-color: #000;
+    color: #fff;
 }
 
 .hero h1,
@@ -188,7 +190,7 @@ body {
 .prompt-card h3,
 .section-title {
     margin: 0;
-    font-size: 16px;
+    font-size: small;
     line-height: 20px;
     font-weight: 700;
 }
