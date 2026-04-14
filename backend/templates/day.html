@@ -35,7 +35,7 @@
                         <div class="reflect-actions">
                             <form method="POST" action="{{ url_for('pages.delete_task_page', date=date, task_index=loop.index0) }}">
                                 <input type="hidden" name="username" value="{{ username }}">
-                                <button type="submit" class="text-button">Remove</button>
+                                <button type="submit" class="text-button danger-button">Remove</button>
                             </form>
                         </div>
                     </div>

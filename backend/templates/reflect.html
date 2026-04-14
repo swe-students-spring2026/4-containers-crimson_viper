@@ -28,8 +28,8 @@
                 <label class="form-label">How do you feel right now?</label>
                 <input type="range" name="mood_score" min="1" max="10" value="{{ mood_score|default(5) }}">
 
-                <!-- <label class="form-label">How did I handle stress or frustrations today?</label>
-                <input type="range" name="stress_score" min="1" max="10" value="{{ stress_score|default(5) }}"> -->
+                <label class="form-label">How did I handle stress or frustrations today?</label>
+                <input type="range" name="stress_score" min="1" max="10" value="{{ stress_score|default(5) }}">
 
                 <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
 
