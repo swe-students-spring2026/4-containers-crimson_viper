@@ -20,7 +20,7 @@ app.secret_key = os.getenv("SECRET_KEY", "secret-key")
 app.register_blueprint(entry_bp)
 app.register_blueprint(page_bp)
 
-# set up the database
+# set up the database #database is different from backend's diary_db
 mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017/crimson_viper")
 client = MongoClient(mongo_uri)
 db = client["crimson_viper"]

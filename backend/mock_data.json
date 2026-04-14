@@ -1,0 +1,66 @@
+[
+  {
+    "username": "test_user",
+    "date": "2026-04-13",
+    "journal_entries": [
+      {
+        "transcript": "Had a productive day at work. Finished the project.",
+        "mood": "happy",
+        "summary": "Productive workday, project completed."
+      },
+      {
+        "transcript": "Went for a walk in the evening.",
+        "mood": "relaxed",
+        "summary": "Evening walk."
+      }
+    ],
+    "tasks": [
+      {
+        "title": "Buy groceries",
+        "deadline": "2026-04-13 18:00",
+        "done": false
+      },
+      {
+        "title": "Read a book",
+        "deadline": "2026-04-13 21:00",
+        "done": true
+      }
+    ]
+  },
+  {
+    "username": "test_user",
+    "date": "2026-04-14",
+    "journal_entries": [
+      {
+        "transcript": "Had a meeting with the team.",
+        "mood": "neutral",
+        "summary": "Team meeting."
+      }
+    ],
+    "tasks": [
+      {
+        "title": "Call mom",
+        "deadline": "2026-04-14 19:00",
+        "done": false
+      }
+    ]
+  },
+  {
+    "username": "test_user",
+    "date": "2026-04-15",
+    "journal_entries": [
+      {
+        "transcript": "Worked on backend routes and tested API endpoints.",
+        "mood": "focused",
+        "summary": "Backend work and API testing."
+      }
+    ],
+    "tasks": [
+      {
+        "title": "Call dad",
+        "deadline": "2026-04-15 20:00",
+        "done": false
+      }
+    ]
+  }
+]

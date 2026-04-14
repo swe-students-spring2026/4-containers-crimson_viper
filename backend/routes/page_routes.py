@@ -51,7 +51,21 @@ def _parse_date(date_str):
 def _get_day_document(username, selected_date):
     return get_entry_by_date(username, selected_date) or {}
 
+def _get_current_week(selected_date=None):
+    current_date = _parse_date(selected_date) if selected_date else dt_date.today()
+    start_of_week = current_date - timedelta(days=current_date.weekday())
 
+    days = []
+    for i in range(7):
+        day = start_of_week + timedelta(days=i)
+        days.append({
+            "dow": day.strftime("%a").upper(),
+            "num": day.day,
+            "month": day.strftime("%b"),
+            "date": day.isoformat(),
+            "active": day == current_date,
+        })
+    return days
 
 def _get_journal_entries(day_doc):
     return day_doc.get("journal_entries", []) if isinstance(day_doc, dict) else []
@@ -105,7 +119,9 @@ def _day_context(username, selected_date):
 def home():
     username = _get_username(required=False)
     entries = get_all_entries(username) if username else []
-    return render_template("home.html", entries=entries, username=username)
+    selected_date = request.args.get("date")
+    current_week = _get_current_week(selected_date)
+    return render_template("home.html", entries=entries, username=username, current_week=current_week,)
 
 
 @page_bp.route("/day")
@@ -121,6 +137,7 @@ def today():
         prev_date=prev_date,
         next_date=next_date,
     )
+
 
 
 @page_bp.route("/day/<date>")
@@ -190,6 +207,7 @@ def history(date):
         saved_count=saved_count,
         username=username,
     )
+
 
 
 @page_bp.route("/entries/new", methods=["POST"])
