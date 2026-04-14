@@ -1,0 +1,62 @@
+[
+  {
+    "username": "test_user",
+    "date": "2026-04-13",
+    "journal_entries": [
+      {
+        "transcript": "Had a productive day at work. Finished the project.",
+        "mood": "happy",
+        "summary": "Productive workday, project completed."
+      },
+      {
+        "transcript": "Went for a walk in the evening.",
+        "mood": "relaxed",
+        "summary": "Evening walk."
+      }
+    ],
+    "todos": [
+      {
+        "task": "Buy groceries",
+        "completed": false
+      },
+      {
+        "task": "Read a book",
+        "completed": true
+      }
+    ]
+  },
+  {
+    "username": "test_user",
+    "date": "2026-04-11",
+    "journal_entries": [
+      {
+        "transcript": "Had a meeting with the team.",
+        "mood": "neutral",
+        "summary": "Team meeting."
+      }
+    ],
+    "todos": [
+      {
+        "task": "Call mom",
+        "completed": false
+      }
+    ]
+  },
+  {
+    "username": "test_user",
+    "date": "2026-04-12",
+    "journal_entries": [
+      {
+        "transcript": "Had a meeting with the team.",
+        "mood": "neutral",
+        "summary": "Team meeting."
+      }
+    ],
+    "todos": [
+      {
+        "task": "Call mom",
+        "completed": false
+      }
+    ]
+  }
+]

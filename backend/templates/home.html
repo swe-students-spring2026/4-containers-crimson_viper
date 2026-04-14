@@ -21,36 +21,18 @@
         <section class="week-card">
             <div>
                 <p class="week-label">Current Week</p>
-                <h2 class="week-range">Feb 18 – Feb 24</h2>
+                <h2 class="week-range">{{ current_week[0].month }} {{current_week[0].num}} – {{ current_week[-1].month }} {{ current_week[-1].num }}</h2>
             </div>
             <p class="streak">3 days streak</p>
         </section>
 
         <section class="calendar-strip">
-            <div class="calendar-day active">
-                <span class="dow">TUE</span>
-                <span class="date-num">19</span>
-            </div>
-            <div class="calendar-day">
-                <span class="dow">WED</span>
-                <span class="date-num">20</span>
-            </div>
-            <div class="calendar-day">
-                <span class="dow">THU</span>
-                <span class="date-num">21</span>
-            </div>
-            <div class="calendar-day">
-                <span class="dow">FRI</span>
-                <span class="date-num">22</span>
-            </div>
-            <div class="calendar-day">
-                <span class="dow">SAT</span>
-                <span class="date-num">23</span>
-            </div>
-            <div class="calendar-day">
-                <span class="dow">SUN</span>
-                <span class="date-num">24</span>
-            </div>
+            {% for day in current_week %}
+                <div class="calendar-day {% if day.active %}active{% endif %}">
+                    <span class="dow">{{ day.dow }}</span>
+                    <span class="date-num">{{ day.num }}</span>
+                </div>
+            {% endfor %}
         </section>
 
         <section class="prompt-card">
@@ -68,19 +50,23 @@
                 <span>Goals</span>
                 <span>Time</span>
             </div>
-
-            {% for goal in goals %}
-            <div class="goal-row">
-                <span class="goal-name">{{ goal.name }}</span>
-                <span class="goal-time">{{ goal.deadline }}</span>
-            </div>
+            {% if entries %}
+               
+                {% for entry in entries %}
+                    {% for todo in entry.todos %}
+                    
+                        <div class="goal-row">
+                            <span class="goal-name">{{ todo.task }}</span>
+                            <span class="goal-time">{{ entry.date }}</span>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
             {% else %}
             <div class="goal-row empty-row">
                 <span>No goals set yet.</span>
             </div>
-            {% endfor %}
-
-            <p class="more-items">+ 9 more items</p>
+            {% endif %}
+            <p class="more-items">+ {{ entries|length }} more items</p>
         </section>
 
         <hr class="divider">
@@ -89,32 +75,41 @@
             <h3 class="section-title">See your other entries</h3>
 
             <div class="entries-grid">
-                {% for entry in entries %}
-                <a href="/day/{{ entry.date }}" class="entry-box {% if loop.first %}selected{% endif %}">
-                    <span class="entry-month">
-                        {% if loop.first %}FEB{% else %}WED{% endif %}
-                    </span>
-                    <span class="entry-day">{{ entry.date[-2:] }}</span>
-                </a>
+                {% if entries %}
+                    {% for entry in entries %}
+                        <a href="/day/{{ entry.date }}" class="entry-box {% if loop.first %}selected{% endif %}">
+                            <span class="entry-month">
+                                {{ entry.date[5:7]|upper }}
+                            </span>
+                            <span class="entry-day">{{ entry.date[-2:] }}</span>
+                            <p>
+                            {% for journal in entry.journal_entries %}
+                                <li>
+                                    {{ journal.transcript[:15] }}...
+                                </li>
+                            {% endfor %}
+                        </p>
+                        </a>
+                        
+                    {% endfor %}
                 {% else %}
-                <div class="entry-box">
-                    <span class="entry-month">NO</span>
-                    <span class="entry-day">DATA</span>
-                </div>
-                {% endfor %}
-
+                    <div class="entry-box">
+                        <span class="entry-month">NO</span>
+                        <span class="entry-day">DATA</span>
+                    </div>
+                {% endif %}
                 <a href="#" class="entry-box load-more">
                     <span>Load more→</span>
                 </a>
             </div>
         </section>
+        <nav class="bottom-nav">
+            <a href="/" class="nav-item active">Home</a>
+            <a href="/day" class="nav-item">Day</a>
+            <a href="/history" class="nav-item">History</a>
+        </nav>
     </main>
 
-    <nav class="bottom-nav">
-        <a href="/" class="nav-item active">Home</a>
-        <a href="/day" class="nav-item">Day</a>
-        <a href="/history" class="nav-item">History</a>
-    </nav>
 
 </div>
 {% endblock %}

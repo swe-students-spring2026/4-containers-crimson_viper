@@ -11,10 +11,13 @@ body {
 
 .screen {
     width: 393px;
-    min-height: 1056px;
+    min-height: 874px;
     margin: 0 auto;
     background: #ffffff;
     position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .hero {
@@ -33,6 +36,8 @@ body {
 }
 
 .main-content {
+    flex: 1 1 auto;
+    overflow-y: auto;
     padding: 39px 26px 110px;
     background: #ffffff;
 }
@@ -70,7 +75,7 @@ body {
 .calendar-strip {
     margin-top: 20px;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(7, 1fr);
     border: 1px solid #000;
     border-radius: 5px;
     overflow: hidden;
@@ -219,6 +224,13 @@ body {
     flex-direction: column;
     align-items: center;
     padding-top: 8px;
+    list-style-type: none;
+    justify-content: space-evenly;
+}
+
+.entry-box li{
+    justify-content: center;
+    font-size: x-small;
 }
 
 .entry-box.selected {
@@ -250,10 +262,11 @@ body {
 
 .bottom-nav {
     position: absolute;
-    left: 0;
     bottom: 0;
+    left:0;
     width: 393px;
-    height: 39px;
+    height: 56px;
+    z-index: 1000;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     background: #fff;
