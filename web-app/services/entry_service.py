@@ -60,7 +60,7 @@ def update_entry(username, date, entry_index, updated_data):
 
     existing_entry = day["journal_entries"][entry_index]
     merged_entry = {**existing_entry, **updated_data}
-    merged_entry["summary"] = summarize(merged_entry.get("transcript", ""))
+    # merged_entry["summary"] = summarize(merged_entry.get("transcript", ""))
 
     key = f"journal_entries.{entry_index}"
     result = entries_collection.update_one(
