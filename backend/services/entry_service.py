@@ -1,27 +1,31 @@
+from datetime import datetime
+from uuid import uuid4
+
 from models.db import entries_collection
 from ml.summarizer import summarize
 
 def create_entry(username, date, entry_data):
+    entry_data = dict(entry_data)
+    entry_data["entry_id"] = entry_data.get("entry_id") or str(uuid4())
+    entry_data["created_at"] = entry_data.get("created_at") or datetime.utcnow().isoformat()
     entry_data["summary"] = summarize(entry_data.get("transcript", ""))
-    day = entries_collection.find_one({"username": username, "date": date})
-    if day:
-        # Check for duplicate timestamp
-        for entry in day.get("journal_entries", []):
-            if entry.get("timestamp") == entry_data.get("timestamp"):
-                return False  
-        # Append if there's no duplicate
-        result = entries_collection.update_one(
-            {"username": username, "date": date},
-            {"$push": {"journal_entries": entry_data}}
-        )
-        return result.modified_count
-    else:
-        result = entries_collection.update_one(
-            {"username": username, "date": date},
-            {"$set": {"journal_entries": [entry_data]}},
-            upsert=True
-        )
-        return result.upserted_id or True
+
+    result = entries_collection.update_one(
+        {"username": username, "date": date},
+        {
+            "$setOnInsert": {
+                "username": username,
+                "date": date,
+            },
+            "$push": {"journal_entries": entry_data},
+        },
+        upsert=True,
+    )
+
+    if result.modified_count or result.upserted_id:
+        return True
+    return False
+
 
 def get_all_entries(username):
     """
@@ -39,16 +43,30 @@ def get_entry_by_date(username, date):
     day = entries_collection.find_one({"username": username, "date": date})
     if day:
         day["_id"] = str(day["_id"])
+        day.setdefault("journal_entries", [])
+        day.setdefault("tasks", [])
+        day["journal_entries"] = sorted(
+            day["journal_entries"],
+            key=lambda entry: entry.get("created_at") or entry.get("timestamp") or ""
+        )
     return day
 
 def update_entry(username, date, entry_index, updated_data):
     """
     Updates a specific journal entry in the day's journal_entries list.
     """
+    day = entries_collection.find_one({"username": username, "date": date})
+    if not day or "journal_entries" not in day or entry_index >= len(day["journal_entries"]):
+        return 0
+
+    existing_entry = day["journal_entries"][entry_index]
+    merged_entry = {**existing_entry, **updated_data}
+    merged_entry["summary"] = summarize(merged_entry.get("transcript", ""))
+
     key = f"journal_entries.{entry_index}"
     result = entries_collection.update_one(
         {"username": username, "date": date},
-        {"$set": {key: updated_data}}
+        {"$set": {key: merged_entry}}
     )
     return result.modified_count
 
@@ -81,7 +99,13 @@ def add_task(username, date, task_data):
     else:
         result = entries_collection.update_one(
             {"username": username, "date": date},
-            {"$set": {"tasks": [task_data]}},
+            {
+                "$set": {
+                    "username": username,
+                    "date": date,
+                    "tasks": [task_data],
+                }
+            },
             upsert=True
         )
         if result.upserted_id:
