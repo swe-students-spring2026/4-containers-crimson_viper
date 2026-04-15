@@ -43,10 +43,7 @@ while True:
             {"_id": job["_id"]},
 
             # only update the text and status fields
-            {"$set": {
-                "text": result["text"],
-                "status": "processed"
-            }}
+            {"$set": {"text": result["text"], "status": "processed"}}
         )
 
         print("updated database")
