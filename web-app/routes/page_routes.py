@@ -64,14 +64,14 @@ def _get_current_week(selected_date=None):
 
     days = []
     for i in range(7):
-        day = start_of_week + timedelta(days=i)
+        curr_day = start_of_week + timedelta(days=i)
         days.append(
             {
-                "dow": day.strftime("%a").upper(),
-                "num": day.day,
-                "month": day.strftime("%b"),
-                "date": day.isoformat(),
-                "active": day == current_date,
+                "dow": curr_day.strftime("%a").upper(),
+                "num": curr_day.day,
+                "month": curr_day.strftime("%b"),
+                "date": curr_day.isoformat(),
+                "active": curr_day == current_date,
             }
         )
     return days
