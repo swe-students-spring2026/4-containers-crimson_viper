@@ -6,6 +6,12 @@ name = "pypi"
 [packages]
 pylint = "*"
 black = "*"
+openai-whisper = "*"
+torch = "*"
+pymongo = "*"
+sounddevice = "*"
+scipy = "*"
+whisper = "*"
 
 [dev-packages]
 
