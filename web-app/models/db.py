@@ -10,7 +10,7 @@ from pymongo import MongoClient
 mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017/")
 client = MongoClient(mongo_uri)
 
-db_name= os.getenv("DB_NAME", "crimson_viper")
+db_name = os.getenv("DB_NAME", "crimson_viper")
 db = client[db_name]
 
 users_collection = db["users"]
