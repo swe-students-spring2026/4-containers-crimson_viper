@@ -11,7 +11,8 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/crimson_viper
+      - MONGO_URI=mongodb://mongodb:27017/
+      - DB_NAME=crimson_viper
 
   web-app:
     build: ./web-app
@@ -21,4 +22,6 @@ services:
     depends_on:
       - mongodb
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/crimson_viper
+      - MONGO_URI=mongodb://mongodb:27017/
+      - DB_NAME=crimson_viper
+      - SECRET_KEY=secret-key
