@@ -116,21 +116,21 @@ def add_task(username, date, task_data):
             {"username": username, "date": date}, {"$push": {"tasks": task_data}}
         )
         return result.modified_count
-    else:
-        result = entries_collection.update_one(
-            {"username": username, "date": date},
-            {
-                "$set": {
-                    "username": username,
-                    "date": date,
-                    "tasks": [task_data],
-                }
-            },
-            upsert=True,
-        )
-        if result.upserted_id:
-            return str(result.upserted_id)
-        return True
+
+    result = entries_collection.update_one(
+        {"username": username, "date": date},
+        {
+            "$set": {
+                "username": username,
+                "date": date,
+                "tasks": [task_data],
+            }
+        },
+        upsert=True,
+    )
+    if result.upserted_id:
+        return str(result.upserted_id)
+    return True
 
 
 def edit_task(username, date, task_index, updated_task):
