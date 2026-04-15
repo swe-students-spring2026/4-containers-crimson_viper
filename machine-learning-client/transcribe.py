@@ -1,3 +1,10 @@
+"""
+Machine learning client transcribing audio
+- Checks MongoDB for unprocessed audio files
+- Uses Whisper to transcribe the audio files
+- Updates the transcription in MongoDB
+"""
+
 import time
 import whisper
 from pymongo import MongoClient
@@ -44,4 +51,3 @@ while True:
 
         print("updated database")
     time.sleep(10)
-    
