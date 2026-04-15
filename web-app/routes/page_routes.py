@@ -39,7 +39,6 @@ def _get_username(required=True):
     return username
 
 
-
 def _parse_date(date_str):
     try:
         return datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -47,9 +46,9 @@ def _parse_date(date_str):
         return dt_date.today()
 
 
-
 def _get_day_document(username, selected_date):
     return get_entry_by_date(username, selected_date) or {}
+
 
 def _get_current_week(selected_date=None):
     current_date = _parse_date(selected_date) if selected_date else dt_date.today()
@@ -58,18 +57,20 @@ def _get_current_week(selected_date=None):
     days = []
     for i in range(7):
         day = start_of_week + timedelta(days=i)
-        days.append({
-            "dow": day.strftime("%a").upper(),
-            "num": day.day,
-            "month": day.strftime("%b"),
-            "date": day.isoformat(),
-            "active": day == current_date,
-        })
+        days.append(
+            {
+                "dow": day.strftime("%a").upper(),
+                "num": day.day,
+                "month": day.strftime("%b"),
+                "date": day.isoformat(),
+                "active": day == current_date,
+            }
+        )
     return days
+
 
 def _get_journal_entries(day_doc):
     return day_doc.get("journal_entries", []) if isinstance(day_doc, dict) else []
-
 
 
 def _get_prompt_entry(day_doc):
@@ -84,7 +85,6 @@ def _get_prompt_entry(day_doc):
     return prompt_entries[-1]
 
 
-
 def _build_prompt_choices(current_prompt=None):
     pool = PROMPTS[:]
     if len(pool) >= 3:
@@ -93,7 +93,9 @@ def _build_prompt_choices(current_prompt=None):
         prompt_choices = pool
 
     if current_prompt:
-        prompt_choices = [prompt for prompt in prompt_choices if prompt != current_prompt]
+        prompt_choices = [
+            prompt for prompt in prompt_choices if prompt != current_prompt
+        ]
         prompt_choices.insert(0, current_prompt)
 
     seen = []
@@ -103,7 +105,6 @@ def _build_prompt_choices(current_prompt=None):
             seen.append(prompt)
             deduped.append(prompt)
     return deduped[:3]
-
 
 
 def _day_context(username, selected_date):
@@ -121,7 +122,12 @@ def home():
     entries = get_all_entries(username) if username else []
     selected_date = request.args.get("date")
     current_week = _get_current_week(selected_date)
-    return render_template("home.html", entries=entries, username=username, current_week=current_week,)
+    return render_template(
+        "home.html",
+        entries=entries,
+        username=username,
+        current_week=current_week,
+    )
 
 
 @page_bp.route("/day")
@@ -137,7 +143,6 @@ def today():
         prev_date=prev_date,
         next_date=next_date,
     )
-
 
 
 @page_bp.route("/day/<date>")
@@ -177,7 +182,6 @@ def reflect():
 
     prompt_choices = _build_prompt_choices(current_prompt)
 
-
     return render_template(
         "reflect.html",
         username=username,
@@ -207,7 +211,6 @@ def history(date):
         saved_count=saved_count,
         username=username,
     )
-
 
 
 @page_bp.route("/entries/new", methods=["POST"])
@@ -280,7 +283,9 @@ def create_task_page():
                 "completed": False,
             },
         )
-    return redirect(url_for("pages.today", username=username, date=entry_date) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/edit", methods=["POST"])
@@ -294,7 +299,9 @@ def update_task_page(date, task_index):
         "completed": completed,
     }
     edit_task(username, entry_date, task_index, updated_task)
-    return redirect(url_for("pages.today", username=username, date=entry_date) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/toggle", methods=["POST"])
@@ -311,7 +318,9 @@ def toggle_task_page(date, task_index):
             "completed": not task.get("completed", False),
         }
         edit_task(username, entry_date, task_index, updated_task)
-    return redirect(url_for("pages.today", username=username, date=entry_date) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/delete", methods=["POST"])
@@ -319,4 +328,6 @@ def delete_task_page(date, task_index):
     username = _get_username()
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
-    return redirect(url_for("pages.today", username=username, date=entry_date) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
