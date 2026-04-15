@@ -2,13 +2,13 @@ from datetime import datetime
 from uuid import uuid4
 
 from models.db import entries_collection
-from ml.summarizer import summarize
+# from ml.summarizer import summarize
 
 def create_entry(username, date, entry_data):
     entry_data = dict(entry_data)
     entry_data["entry_id"] = entry_data.get("entry_id") or str(uuid4())
     entry_data["created_at"] = entry_data.get("created_at") or datetime.utcnow().isoformat()
-    entry_data["summary"] = summarize(entry_data.get("transcript", ""))
+    # entry_data["summary"] = summarize(entry_data.get("transcript", ""))
 
     result = entries_collection.update_one(
         {"username": username, "date": date},
@@ -61,7 +61,7 @@ def update_entry(username, date, entry_index, updated_data):
 
     existing_entry = day["journal_entries"][entry_index]
     merged_entry = {**existing_entry, **updated_data}
-    merged_entry["summary"] = summarize(merged_entry.get("transcript", ""))
+    # merged_entry["summary"] = summarize(merged_entry.get("transcript", ""))
 
     key = f"journal_entries.{entry_index}"
     result = entries_collection.update_one(

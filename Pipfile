@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+requests = "*"
 
 [dev-packages]
 flask = "*"
@@ -12,4 +13,4 @@ pymongo = "*"
 python-dotenv = "*"
 
 [requires]
-python_version = "3.13"
+python_version = "3.9"
