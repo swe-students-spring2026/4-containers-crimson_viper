@@ -19,7 +19,9 @@ entry_bp = Blueprint("entries", __name__)
 
 @entry_bp.route("/entries", methods=["POST"])
 def create():
-    """Creates a new entry"""
+    """
+    Creates a new entry
+    """
     data = request.get_json(silent=True) or {}
     username = data.get("username")
     date = data.get("date")
@@ -36,13 +38,17 @@ def create():
 
 @entry_bp.route("/entries/<username>", methods=["GET"])
 def get_all(username):
-    """Gets all usernames"""
+    """
+    Gets all usernames
+    """
     return jsonify(get_all_entries(username))
 
 
 @entry_bp.route("/entries/<username>/<date>", methods=["GET"])
 def get_one(username, date):
-    """Gets one entry with username and date"""
+    """
+    Gets one entry with username and date
+    """
     entry = get_entry_by_date(username, date)
     if not entry:
         return jsonify({"error": "Not found"}), 404
@@ -51,7 +57,9 @@ def get_one(username, date):
 
 @entry_bp.route("/entries/<username>/<date>/<int:entry_index>", methods=["PUT"])
 def update(username, date, entry_index):
-    """Updates an entry"""
+    """
+    Updates an entry
+    """
     updated_data = request.get_json(silent=True) or {}
     result = update_entry(username, date, entry_index, updated_data)
     if not result:
@@ -61,7 +69,9 @@ def update(username, date, entry_index):
 
 @entry_bp.route("/entries/<username>/<date>/<int:entry_index>", methods=["DELETE"])
 def delete(username, date, entry_index):
-    """Deletes an entry"""
+    """
+    Deletes an entry
+    """
     result = delete_entry(username, date, entry_index)
     if not result:
         return jsonify({"error": "Entry not found"}), 404
@@ -70,7 +80,9 @@ def delete(username, date, entry_index):
 
 @entry_bp.route("/tasks/<username>/<date>", methods=["POST"])
 def create_task(username, date):
-    """Creates a new task"""
+    """
+    Creates a new task
+    """
     task_data = request.get_json(silent=True) or {}
     result = add_task(username, date, task_data)
     return jsonify({"msg": "task added", "result": str(result)})
@@ -78,7 +90,9 @@ def create_task(username, date):
 
 @entry_bp.route("/tasks/<username>/<date>/<int:task_index>", methods=["PUT"])
 def update_task(username, date, task_index):
-    """Updates a task"""
+    """
+    Updates a task
+    """
     updated_task = request.get_json(silent=True) or {}
     result = edit_task(username, date, task_index, updated_task)
     if not result:
@@ -88,7 +102,9 @@ def update_task(username, date, task_index):
 
 @entry_bp.route("/tasks/<username>/<date>/<int:task_index>", methods=["DELETE"])
 def remove_task(username, date, task_index):
-    """Removes a task"""
+    """
+    Removes a task
+    """
     result = delete_task(username, date, task_index)
     if not result:
         return jsonify({"error": "Task not found"}), 404

@@ -33,7 +33,9 @@ PROMPTS = [
 
 
 def _get_username(required=True):
-    """Gets username"""
+    """
+    Gets username
+    """
     username = (
         request.args.get("username")
         or request.form.get("username")
@@ -45,7 +47,9 @@ def _get_username(required=True):
 
 
 def _parse_date(date_str):
-    """Parses a date string"""
+    """
+    Parses a date string
+    """
     try:
         return datetime.strptime(date_str, "%Y-%m-%d").date()
     except (TypeError, ValueError):
@@ -53,12 +57,16 @@ def _parse_date(date_str):
 
 
 def _get_day_document(username, selected_date):
-    """Gets a document for a username and date"""
+    """
+    Gets a document for a username and date
+    """
     return get_entry_by_date(username, selected_date) or {}
 
 
 def _get_current_week(selected_date=None):
-    """Gets the current week"""
+    """
+    Gets the current week
+    """
     current_date = _parse_date(selected_date) if selected_date else dt_date.today()
     start_of_week = current_date - timedelta(days=current_date.weekday())
 
@@ -78,12 +86,16 @@ def _get_current_week(selected_date=None):
 
 
 def _get_journal_entries(day_doc):
-    """Gets the journal entries for a certain day"""
+    """
+    Gets the journal entries for a certain day
+    """
     return day_doc.get("journal_entries", []) if isinstance(day_doc, dict) else []
 
 
 def _get_prompt_entry(day_doc):
-    """Gets the prompt for a certain day"""
+    """
+    Gets the prompt for a certain day
+    """
     journal_entries = _get_journal_entries(day_doc)
     prompt_entries = [
         (index, journal_entry)
@@ -96,7 +108,9 @@ def _get_prompt_entry(day_doc):
 
 
 def _build_prompt_choices(current_prompt=None):
-    """Generates the prompt choices"""
+    """
+    Generates the prompt choices
+    """
     pool = PROMPTS[:]
     if len(pool) >= 3:
         prompt_choices = random.sample(pool, 3)
@@ -119,7 +133,9 @@ def _build_prompt_choices(current_prompt=None):
 
 
 def _day_context(username, selected_date):
-    """Gets the context for a user for a certain day"""
+    """
+    Gets the context for a user for a certain day
+    """
     current_date = _parse_date(selected_date)
     normalized_date = current_date.isoformat()
     day_doc = _get_day_document(username, normalized_date)
@@ -130,7 +146,9 @@ def _day_context(username, selected_date):
 
 @page_bp.route("/", methods=["GET"])
 def home():
-    """Renders home.html"""
+    """
+    Renders home.html
+    """
     username = _get_username(required=False)
     entries = get_all_entries(username) if username else []
     selected_date = request.args.get("date")
@@ -145,7 +163,9 @@ def home():
 
 @page_bp.route("/day")
 def today():
-    """Renders day.html"""
+    """
+    Renders day.html
+    """
     username = _get_username()
     selected_date = request.args.get("date") or str(dt_date.today())
     normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
@@ -161,7 +181,9 @@ def today():
 
 @page_bp.route("/day/<date>")
 def day(date):
-    """Renders day.html"""
+    """
+    Renders day.html
+    """
     username = _get_username()
     normalized_date, entry, prev_date, next_date = _day_context(username, date)
     return render_template(
@@ -176,7 +198,9 @@ def day(date):
 
 @page_bp.route("/reflect")
 def reflect():
-    """Renders reflect.html"""
+    """
+    Renders reflect.html
+    """
     username = _get_username()
     selected_date = request.args.get("date") or str(dt_date.today())
     mode = request.args.get("mode", "prompt")
@@ -215,7 +239,9 @@ def reflect():
 
 @page_bp.route("/history/<date>")
 def history(date):
-    """Renders history.html"""
+    """
+    Renders history.html
+    """
     username = _get_username(required=False)
     selected_date = _parse_date(date).isoformat()
     day_doc = _get_day_document(username, selected_date) if username else {}
@@ -232,7 +258,9 @@ def history(date):
 
 @page_bp.route("/entries/new", methods=["POST"])
 def create_entry_page():
-    """Creates an entry page"""
+    """
+    Creates an entry page
+    """
     username = _get_username()
     entry_date = _parse_date(request.form["date"]).isoformat()
     entry_data = {
@@ -257,7 +285,9 @@ def create_entry_page():
 
 @page_bp.route("/entries/<date>/<int:entry_index>/edit", methods=["POST"])
 def update_entry_page(date, entry_index):
-    """Updates an entry page"""
+    """
+    Updates an entry page
+    """
     username = _get_username()
     entry_date = _parse_date(date).isoformat()
     updated_data = {
@@ -282,7 +312,9 @@ def update_entry_page(date, entry_index):
 
 @page_bp.route("/entries/<date>/<int:entry_index>/delete", methods=["POST"])
 def delete_entry_page(date, entry_index):
-    """Deletes an entry page"""
+    """
+    Deletes an entry page
+    """
     username = _get_username()
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
@@ -291,7 +323,9 @@ def delete_entry_page(date, entry_index):
 
 @page_bp.route("/tasks/new", methods=["POST"])
 def create_task_page():
-    """Creates a task page"""
+    """
+    Creates a task page
+    """
     username = _get_username()
     entry_date = _parse_date(request.form["date"]).isoformat()
     title = request.form.get("title", "").strip()
@@ -311,7 +345,9 @@ def create_task_page():
 
 @page_bp.route("/tasks/<date>/<int:task_index>/edit", methods=["POST"])
 def update_task_page(date, task_index):
-    """Updates a task page"""
+    """
+    Updates a task page
+    """
     username = _get_username()
     entry_date = _parse_date(date).isoformat()
     title = request.form.get("title", "").strip()
@@ -328,7 +364,9 @@ def update_task_page(date, task_index):
 
 @page_bp.route("/tasks/<date>/<int:task_index>/toggle", methods=["POST"])
 def toggle_task_page(date, task_index):
-    """Toggles the task page"""
+    """
+    Toggles the task page
+    """
     username = _get_username()
     entry_date = _parse_date(date).isoformat()
     day_doc = _get_day_document(username, entry_date)
@@ -348,7 +386,9 @@ def toggle_task_page(date, task_index):
 
 @page_bp.route("/tasks/<date>/<int:task_index>/delete", methods=["POST"])
 def delete_task_page(date, task_index):
-    """Deletes a task page"""
+    """
+    Deletes a task page
+    """
     username = _get_username()
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)

@@ -1,3 +1,7 @@
+"""
+Manage journal entries and tasks
+"""
+
 from datetime import datetime
 from uuid import uuid4
 
@@ -7,6 +11,9 @@ from models.db import entries_collection
 
 
 def create_entry(username, date, entry_data):
+    """
+    Create an entry
+    """
     entry_data = dict(entry_data)
     entry_data["entry_id"] = entry_data.get("entry_id") or str(uuid4())
     entry_data["created_at"] = (
