@@ -6,7 +6,7 @@ client = MongoClient("mongodb://mongodb:27017/")
 db = client["crimson_viper"]
 
 # we still need to decide how we are handling the audio files.
-# where is the path to the files stored? It would make sense if 
+# where is the path to the files stored? It would make sense if
 # we just make an entirely separate collection that stores:
     # 1) userid of whoever created the audio file
     # 2) the date that the audio file was uploaded to the database
@@ -43,5 +43,5 @@ while True:
         )
 
         print("updated database")
-    
     time.sleep(10)
+    
