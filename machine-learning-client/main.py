@@ -31,7 +31,7 @@ emotion_analyzer = pipeline(
     model="j-hartmann/emotion-english-distilroberta-base",
     return_all_scores=False,
 )
-allowed_emotions = {"anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"}
+ALLOWED_EMOTIONS = {"anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"}
 
 while True:
     # i think this makes sense for us to be able to find any audio
@@ -51,7 +51,7 @@ while True:
         if text and text.strip():
             emotion_result = emotion_analyzer(text, truncation=True)
             emotion_label = emotion_result[0]["label"].lower()
-            if emotion_label not in allowed_emotions:
+            if emotion_label not in ALLOWED_EMOTIONS:
                 emotion_label = "neutral"
         else:
             emotion_label = "neutral"
@@ -59,7 +59,13 @@ while True:
         collection.update_one(
             {"_id": job["_id"]},
             # only update the text and status fields
-            {"$set": {"transcription": result["text"], "emotion": emotion_label, "status": "processed"}},
+            {
+                "$set": {
+                    "transcription": result["text"],
+                    "emotion": emotion_label,
+                    "status": "processed"
+                }
+            },
         )
 
         print("updated database")
