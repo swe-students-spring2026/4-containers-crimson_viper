@@ -130,7 +130,6 @@ def home():
         username=username,
         current_week=current_week,
         date=current_day,
-        format_time=format_time,
     )
 
 

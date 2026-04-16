@@ -61,7 +61,7 @@
                             <!-- <span class="goal-name">{{ task.title }}</span> -->
                              </form>
                             {% if task.deadline %}
-                               <span class="goal-time">{{ entry.date[5:10] }} {{ format_time(task.deadline) }}</span>
+                               <span class="goal-time">{{ entry.date[5:10] }} {{ task.deadline }}</span>
                             {% endif %}
                         </div>
                     {% endfor %}
