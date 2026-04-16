@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Audio Recorder</title>
+</head>
+<body>
+
+  <h2>Record Audio</h2>
+
+  <button id="start">Start Recording</button>
+  <button id="stop" disabled>Stop Recording</button>
+
+  <script>
+    let mediaRecorder;
+    let chunks = [];
+
+    const startBtn = document.getElementById("start");
+    const stopBtn = document.getElementById("stop");
+
+    startBtn.onclick = async () => {
+      // 1. Get microphone stream (MDN getUserMedia requirement)
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // 2. Create recorder from stream
+      mediaRecorder = new MediaRecorder(stream);
+      chunks = [];
+
+      // 3. Collect audio data
+      mediaRecorder.ondataavailable = (e) => {
+        chunks.push(e.data);
+      };
+
+      // 4. When recording stops → send to Flask
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: "audio/wav" });
+
+        const formData = new FormData();
+        formData.append("audio", audioBlob, "recording.wav");
+
+        await fetch("/upload-audio", {
+          method: "POST",
+          body: formData
+        });
+
+        alert("Audio uploaded");
+      };
+
+      // 5. Start recording
+      mediaRecorder.start();
+
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    };
+
+    stopBtn.onclick = () => {
+      mediaRecorder.stop();
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    };
+  </script>
+
+</body>
+</html>

@@ -3,7 +3,6 @@ from datetime import date
 
 # for the login
 import os
-from pymongo import MongoClient
 from flask_login import (
     LoginManager,
     UserMixin,
@@ -16,6 +15,7 @@ from bson.objectid import ObjectId
 
 from routes.entry_routes import entry_bp
 from routes.page_routes import page_bp
+from routes.audio_routes import audio_bp
 
 # we need to grab the database from the db.py file
 from models.db import db
@@ -25,6 +25,7 @@ app.secret_key = os.getenv("SECRET_KEY", "secret-key")
 
 app.register_blueprint(entry_bp)
 app.register_blueprint(page_bp)
+app.register_blueprint(audio_bp)
 
 
 # flask login
@@ -105,6 +106,12 @@ def signup():
 
         return redirect(url_for("login"))
     return render_template("signup.html")
+
+
+@app.route("/record-audio")
+@login_required
+def record_audio():
+    return render_template("record_audio.html")
 
 
 @app.route("/logout")

@@ -4,6 +4,8 @@ services:
     container_name: mongodb
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
 
   machine-learning-client:
     build: ./machine-learning-client
@@ -13,6 +15,8 @@ services:
     environment:
       - MONGO_URI=mongodb://mongodb:27017/
       - DB_NAME=crimson_viper
+    volumes:
+      - audio_data:/data/audio
 
   web-app:
     build: ./web-app
@@ -26,4 +30,8 @@ services:
       - DB_NAME=crimson_viper
       - SECRET_KEY=secret-key
     volumes:
-      - ./web-app:/app
+      - audio_data:/data/audio
+
+volumes:
+  audio_data:
+  mongo_data:

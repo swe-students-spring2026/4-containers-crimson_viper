@@ -3,7 +3,9 @@ Has the page routes for the app
 """
 
 from datetime import date as dt_date, datetime, timedelta
-from flask import Blueprint, abort, redirect, render_template, request, url_for
+import random
+
+from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 
 from services.entry_service import (
@@ -29,20 +31,6 @@ PROMPTS = [
     "What are you grateful for today?",
     "What do you need more of right now?",
 ]
-
-
-def _get_username(required=True):
-    """
-    Gets username
-    """
-    username = (
-        request.args.get("username")
-        or request.form.get("username")
-        or request.values.get("username")
-    )
-    if required and not username:
-        abort(400, description="username is required")
-    return username
 
 
 def _parse_date(date_str):
@@ -125,24 +113,14 @@ def _day_context(username, selected_date):
     return normalized_date, day_doc, prev_date, next_date
 
 
-def format_time(time_str):
-    """
-    Formats a time string from HH:MM format to 12-hour format with AM/PM.
-    """
-    if not time_str:
-        return None
-    dt = datetime.strptime(time_str, "%H:%M")
-    return dt.strftime("%-I:%M %p")
-
-
-@page_bp.route("/home", methods=["GET"])
+@page_bp.route("/", methods=["GET"])
 @login_required
 def home():
     """
     Renders home.html
     """
     username = current_user.username
-    entries = get_all_entries(username) if username else []
+    entries = get_all_entries(username)
     selected_date = request.args.get("date")
     current_week = _get_current_week(selected_date)
     current_day = dt_date.today().isoformat()
@@ -157,11 +135,12 @@ def home():
 
 
 @page_bp.route("/day")
+@login_required
 def today():
     """
     Renders day.html
     """
-    username = _get_username()
+    username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
     return render_template(
@@ -176,11 +155,12 @@ def today():
 
 
 @page_bp.route("/day/<date>")
+@login_required
 def day(date):
     """
     Renders day.html
     """
-    username = _get_username()
+    username = current_user.username
     normalized_date, entry, prev_date, next_date = _day_context(username, date)
     return render_template(
         "day.html",
@@ -193,11 +173,12 @@ def day(date):
 
 
 @page_bp.route("/reflect")
+@login_required
 def reflect():
     """
     Renders reflect.html
     """
-    username = _get_username()
+    username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     mode = request.args.get("mode", "prompt")
     selected_date, day_doc, _, _ = _day_context(username, selected_date)
@@ -236,13 +217,14 @@ def reflect():
 
 
 @page_bp.route("/history/<date>")
+@login_required
 def history(date):
     """
     Renders history.html
     """
-    username = _get_username(required=False)
+    username = current_user.username
     selected_date = _parse_date(date).isoformat()
-    day_doc = _get_day_document(username, selected_date) if username else {}
+    day_doc = _get_day_document(username, selected_date)
     same_day_entries = _get_journal_entries(day_doc)
     saved_count = len(same_day_entries)
     return render_template(
@@ -255,11 +237,12 @@ def history(date):
 
 
 @page_bp.route("/entries/new", methods=["POST"])
+@login_required
 def create_entry_page():
     """
     Creates an entry page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(request.form["date"]).isoformat()
     entry_data = {
         "transcript": request.form["transcript"],
@@ -282,11 +265,12 @@ def create_entry_page():
 
 
 @page_bp.route("/entries/<date>/<int:entry_index>/edit", methods=["POST"])
+@login_required
 def update_entry_page(date, entry_index):
     """
     Updates an entry page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(date).isoformat()
     updated_data = {
         "transcript": request.form["transcript"],
@@ -309,22 +293,24 @@ def update_entry_page(date, entry_index):
 
 
 @page_bp.route("/entries/<date>/<int:entry_index>/delete", methods=["POST"])
+@login_required
 def delete_entry_page(date, entry_index):
     """
     Deletes an entry page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
 @page_bp.route("/tasks/new", methods=["POST"])
+@login_required
 def create_task_page():
     """
     Creates a task page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(request.form["date"]).isoformat()
     title = request.form.get("title", "").strip()
     deadline = request.form.get("deadline")
@@ -344,11 +330,12 @@ def create_task_page():
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/edit", methods=["POST"])
+@login_required
 def update_task_page(date, task_index):
     """
     Updates a task page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(date).isoformat()
     title = request.form.get("title", "").strip()
     completed = request.form.get("completed") == "on"
@@ -363,11 +350,12 @@ def update_task_page(date, task_index):
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/toggle", methods=["POST"])
+@login_required
 def toggle_task_page(date, task_index):
     """
     Toggles the task page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(date).isoformat()
     day_doc = _get_day_document(username, entry_date)
     tasks = day_doc.get("tasks", []) if isinstance(day_doc, dict) else []
@@ -385,11 +373,12 @@ def toggle_task_page(date, task_index):
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/delete", methods=["POST"])
+@login_required
 def delete_task_page(date, task_index):
     """
     Deletes a task page
     """
-    username = _get_username()
+    username = current_user.username
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
     return redirect(
