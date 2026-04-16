@@ -35,6 +35,7 @@ ALLOWED_EMOTIONS = {"anger", "disgust", "fear", "joy", "neutral", "sadness", "su
 
 
 def main():
+    """main loop that continuously checks for unprocessed audio files and processes them"""
     while True:
         # i think this makes sense for us to be able to find any audio
         # files that haven't yet been processed by the ml model
