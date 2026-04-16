@@ -151,10 +151,10 @@ def home():
         date=current_day,
     )
 
-
 @page_bp.route("/day")
 @login_required
 def today():
+    """Renders the day view for today or a selected date."""
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
@@ -177,6 +177,7 @@ def today():
 @page_bp.route("/day/<date>")
 @login_required
 def day(date):
+    """Renders the day view for a specific date."""
     username = current_user.username
     normalized_date, entry, prev_date, next_date = _day_context(username, date)
 
@@ -407,9 +408,10 @@ def delete_task_page(date, task_index):
 @page_bp.route("/record-audio")
 @login_required
 def record_audio_page():
+    """Renders the audio recording page."""
     selected_date = request.args.get("date") or str(dt_date.today())
     return render_template(
         "record_audio.html",
-        username=current_user.username, 
+        username=current_user.username,
         date=selected_date,
     )
