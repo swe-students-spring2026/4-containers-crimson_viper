@@ -398,15 +398,3 @@ def delete_task_page(date, task_index):
     return redirect(
         url_for("pages.today", username=username, date=entry_date) + "#tasks"
     )
-
-
-'''
-Some notes:
-Today's task doesn't have a deadline input. thus time is not displayed in home
-CSS is inconsistent for tasks between home n day
-home displays short version of entries js like intended. mb this will change to add a mood as well
-day view's header doesn't move to different dates.
-also time is in a different timezone.
-there needs to be a login and logout button on the home page when logged in. and login/signup buttons when logged out
-login needs better ui
-'''
