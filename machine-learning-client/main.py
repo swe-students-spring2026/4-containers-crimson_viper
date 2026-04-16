@@ -9,7 +9,6 @@ import time
 import whisper
 from pymongo import MongoClient
 from transformers import pipeline
-# pylint: disable=invalid-name
 
 client = MongoClient("mongodb://mongodb:27017/")
 db = client["crimson_viper"]
@@ -50,12 +49,12 @@ while True:
 
         text = result["text"]
         if text and text.strip():
-            emotion_Result = emotion_analyzer(text, truncation=True)
-            emotion_Label = emotion_Result[0]["label"].lower()
-            if emotion_Label not in ALLOWED_EMOTIONS:
-                emotion_Label = "neutral"
+            emotion_result = emotion_analyzer(text, truncation=True)
+            emotion_label = emotion_result[0]["label"].lower()
+            if emotion_label not in ALLOWED_EMOTIONS:
+                emotion_label = "neutral"
         else:
-            emotion_Label = "neutral"
+            emotion_label = "neutral"
 
         collection.update_one(
             {"_id": job["_id"]},
@@ -63,7 +62,7 @@ while True:
             {
                 "$set": {
                     "transcription": result["text"],
-                    "emotion": emotion_Label,
+                    "emotion": emotion_label,
                     "status": "processed"
                 }
             },
