@@ -27,6 +27,8 @@ def upload_audio():
 
     file_path = os.path.join(audio_dir, filename)
     audio_file.save(file_path)
+    
+    selected_date = request.form.get("date")
 
     db.audio_jobs.insert_one(
         {

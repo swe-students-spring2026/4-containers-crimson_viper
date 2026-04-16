@@ -6,6 +6,7 @@
 {% set day_doc = entry if entry else {} %}
 {% set journal_entries = day_doc.journal_entries if day_doc and day_doc.journal_entries else [] %}
 {% set task_list = day_doc.tasks if day_doc and day_doc.tasks else [] %}
+{% set daily_audio = audio_jobs if audio_jobs else [] %}
 
 <div class="screen">
     <header class="day-header-card">
@@ -76,7 +77,39 @@
 
                 <button type="submit" class="primary-button">Save</button>
             </form>
+        </section>
+        
+        <section class="content-card">
+            <div class="section-header">
+                <h3 class="section-title">AUDIO RECORDINGS</h3>
+            </div>
 
+            <a href="{{ url_for('record_audio', date=date) }}" class="primary-button">Record Audio</a>
+
+            {% if daily_audio %}
+                <div class="journal-list">
+                    {% for audio in daily_audio %}
+                        <div class="journal-card">
+                            <div class="journal-card-top">
+                                <span class="journal-index">Recording {{ loop.index }}</span>
+                                <span class="entry-meta">{{ audio.status }}</span>
+                            </div>
+                            <p class="journal-summary">
+                                Transcript:
+                                {{ audio.transcription if audio.transcription else "Processing transcription..." }}
+                            </p>
+                            <p class="journal-summary">
+                                Emotion:
+                                {{ audio.emotion if audio.emotion else "Not analyzed yet" }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state-card">
+                    <p class="empty-text">No audio recordings yet for this day.</p>
+                </div>
+            {% endif %}
         </section>
 
         <section class="content-card">

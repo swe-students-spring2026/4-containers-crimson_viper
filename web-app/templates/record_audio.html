@@ -36,14 +36,19 @@
         const audioBlob = new Blob(chunks, { type: "audio/wav" });
 
         const formData = new FormData();
+        formData.append("date", "{{ date }}");
         formData.append("audio", audioBlob, "recording.wav");
 
-        await fetch("/upload-audio", {
+        const response = await fetch("/upload-audio", {
           method: "POST",
-          body: formData
+          body: formData,
         });
-
-        alert("Audio uploaded");
+        if (response.ok) {
+          alert("Audio uploaded.");
+        } else {
+          alert("Failed to upload audio.");
+        }
+ 
       };
 
       // 5. Start recording
