@@ -4,6 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+flask = "*"
+flask-cors = "*"
+pymongo = "*"
+python-dotenv = "*"
+requests = "*"
+flask-login = "*"
+click = "*"
+pylint = "*"
+black = "*"
 
 [dev-packages]
 
