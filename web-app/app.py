@@ -16,6 +16,7 @@ from bson.objectid import ObjectId
 
 from routes.entry_routes import entry_bp
 from routes.page_routes import page_bp
+
 # we need to grab the database from the db.py file
 from models.db import db
 
@@ -111,11 +112,13 @@ def logout():
     logout_user()
     return redirect(url_for("login"))
 
+
 @app.route("/")
 def index():
     if current_user.is_authenticated:
         return redirect(url_for("pages.home", username=current_user.username))
     return redirect(url_for("login"))
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
