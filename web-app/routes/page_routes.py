@@ -149,7 +149,6 @@ def today():
         username=username,
         prev_date=prev_date,
         next_date=next_date,
-        format_time=format_time,
     )
 
 

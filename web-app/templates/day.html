@@ -33,7 +33,7 @@
                     <div class="task-copy">
                         <span class="goal-name">{{ task_title }}</span>
                         {% if task.deadline %}
-                         <span class="goal-time">{{ format_time(task.deadline) }}</span>
+                         <span class="goal-time">{{ task.deadline }}</span>
                         {% endif %}
                         <div class="reflect-actions">
                             <form method="POST" action="{{ url_for('pages.delete_task_page', date=date, task_index=loop.index0) }}">
