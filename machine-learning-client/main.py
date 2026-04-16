@@ -49,12 +49,12 @@ while True:
 
         text = result["text"]
         if text and text.strip():
-            emotion_result = emotion_analyzer(text, truncation=True)
-            emotion_label = emotion_result[0]["label"].lower()
-            if emotion_label not in ALLOWED_EMOTIONS:
-                emotion_label = "neutral"
+            emotionResult = emotion_analyzer(text, truncation=True)
+            emotionLabel = emotionResult[0]["label"].lower()
+            if emotionLabel not in ALLOWED_EMOTIONS:
+                emotionLabel = "neutral"
         else:
-            emotion_label = "neutral"
+            emotionLabel = "neutral"
 
         collection.update_one(
             {"_id": job["_id"]},
@@ -62,7 +62,7 @@ while True:
             {
                 "$set": {
                     "transcription": result["text"],
-                    "emotion": emotion_label,
+                    "emotion": emotionLabel,
                     "status": "processed"
                 }
             },
