@@ -33,40 +33,46 @@ emotion_analyzer = pipeline(
 )
 ALLOWED_EMOTIONS = {"anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"}
 
-while True:
-    # i think this makes sense for us to be able to find any audio
-    # files that haven't yet been processed by the ml model
-    job = collection.find_one({"status": "unprocessed"})
 
-    # if there exists an audio file that hasn't yet been processed,
-    # then we process it and then update the database
-    if job:
-        print("found an unprocessed audio file")
-        path = job["audio_path"]
+def main():
+    while True:
+        # i think this makes sense for us to be able to find any audio
+        # files that haven't yet been processed by the ml model
+        job = collection.find_one({"status": "unprocessed"})
 
-        result = model.transcribe(path, language="en")
-        print("transcribed audio file")
+        # if there exists an audio file that hasn't yet been processed,
+        # then we process it and then update the database
+        if job:
+            print("found an unprocessed audio file")
+            path = job["audio_path"]
 
-        text = result["text"]
-        if text and text.strip():
-            emotion_result = emotion_analyzer(text, truncation=True)
-            emotion_label = emotion_result[0]["label"].lower()
-            if emotion_label not in ALLOWED_EMOTIONS:
+            result = model.transcribe(path, language="en")
+            print("transcribed audio file")
+
+            text = result["text"]
+            if text and text.strip():
+                emotion_result = emotion_analyzer(text, truncation=True)
+                emotion_label = emotion_result[0]["label"].lower()
+                if emotion_label not in ALLOWED_EMOTIONS:
+                    emotion_label = "neutral"
+            else:
                 emotion_label = "neutral"
-        else:
-            emotion_label = "neutral"
 
-        collection.update_one(
-            {"_id": job["_id"]},
-            # only update the text and status fields
-            {
-                "$set": {
-                    "transcription": result["text"],
-                    "emotion": emotion_label,
-                    "status": "processed"
-                }
-            },
-        )
+            collection.update_one(
+                {"_id": job["_id"]},
+                # only update the text and status fields
+                {
+                    "$set": {
+                        "transcription": result["text"],
+                        "emotion": emotion_label,
+                        "status": "processed"
+                    }
+                },
+            )
 
-        print("updated database")
-    time.sleep(2)
+            print("updated database")
+        time.sleep(2)
+
+
+if __name__ == "__main__":
+    main()
