@@ -46,4 +46,4 @@ while True:
         )
 
         print("updated database")
-    time.sleep(10)
+    time.sleep(2)
