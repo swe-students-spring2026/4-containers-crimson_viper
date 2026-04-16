@@ -3,7 +3,6 @@ from datetime import date
 
 # for the login
 import os
-from pymongo import MongoClient
 from flask_login import (
     LoginManager,
     UserMixin,
