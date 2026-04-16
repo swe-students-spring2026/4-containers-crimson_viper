@@ -66,7 +66,7 @@ def main():
                     "$set": {
                         "transcription": result["text"],
                         "emotion": emotion_label,
-                        "status": "processed"
+                        "status": "processed",
                     }
                 },
             )
