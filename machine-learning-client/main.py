@@ -36,13 +36,13 @@ while True:
         print("found an unprocessed audio file")
         path = job["audio_path"]
 
-        result = model.transcribe(path)
+        result = model.transcribe(path, language="en")
         print("transcribed audio file")
 
         collection.update_one(
             {"_id": job["_id"]},
             # only update the text and status fields
-            {"$set": {"text": result["text"], "status": "processed"}},
+            {"$set": {"transcription": result["text"], "status": "processed"}},
         )
 
         print("updated database")
