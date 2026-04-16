@@ -153,11 +153,13 @@ def home():
     entries = get_all_entries(username) if username else []
     selected_date = request.args.get("date")
     current_week = _get_current_week(selected_date)
+    current_day = dt_date.today().isoformat()
     return render_template(
         "home.html",
         entries=entries,
         username=username,
         current_week=current_week,
+        date=current_day,
     )
 
 
