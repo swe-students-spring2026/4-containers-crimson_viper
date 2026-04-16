@@ -15,3 +15,4 @@ db = client[db_name]
 
 users_collection = db["users"]
 entries_collection = db["entries"]
+audio_jobs_collection = db["audio_jobs"]
