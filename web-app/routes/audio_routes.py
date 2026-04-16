@@ -27,12 +27,13 @@ def upload_audio():
 
     file_path = os.path.join(audio_dir, filename)
     audio_file.save(file_path)
-    
+
     selected_date = request.form.get("date")
 
     db.audio_jobs.insert_one(
         {
             "username": current_user.username,
+            "date": selected_date,
             "created_at": datetime.utcnow(),
             "audio_path": file_path,
             "status": "unprocessed",

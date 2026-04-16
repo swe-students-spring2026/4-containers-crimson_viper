@@ -160,9 +160,7 @@ def today():
     normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
 
     audio_jobs = list(
-        db.audio_jobs.find(
-            {"username": username, "date": normalized_date}
-        ).sort("created_at", -1)
+        db.audio_jobs.find({"username": username}).sort("created_at", -1)
     )
 
     return render_template(
@@ -183,9 +181,7 @@ def day(date):
     normalized_date, entry, prev_date, next_date = _day_context(username, date)
 
     audio_jobs = list(
-        db.audio_jobs.find(
-            {"username": username, "date": normalized_date}
-        ).sort("created_at", -1)
+        db.audio_jobs.find({"username": username}).sort("created_at", -1)
     )
 
     return render_template(
@@ -414,6 +410,6 @@ def record_audio_page():
     selected_date = request.args.get("date") or str(dt_date.today())
     return render_template(
         "record_audio.html",
-        username=current_user.username,
+        username=current_user.username, 
         date=selected_date,
     )
