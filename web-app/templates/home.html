@@ -13,7 +13,7 @@
 <div class="screen">
 
     <header class="hero">
-        <h1>User’s Digital Diary</h1>
+        <h1>{{ username }}’s Digital Diary</h1>
     </header>
 
     <main class="main-content">
@@ -55,8 +55,14 @@
                 {% for entry in entries %}
                     {% for task in entry.tasks %}
                         <div class="goal-row">
-                            <span class="goal-name">{{ task.title }}</span>
-                            <span class="goal-time">{{ task.deadline }}</span>
+                            <form method="POST" action="{{ url_for('pages.delete_task_page', date=date, task_index=loop.index0) }}">
+                                <input type="hidden" name="username" value="{{ username }}">
+                                <button type="submit" class="goal-name">{{ task.title }}</button>
+                            <!-- <span class="goal-name">{{ task.title }}</span> -->
+                             </form>
+                            {% if task.deadline %}
+                               <span class="goal-time">{{ entry.date[5:10] }} {{ format_time(task.deadline) }}</span>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 {% endfor %}

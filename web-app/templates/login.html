@@ -1,27 +1,21 @@
-{% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-{% endblock %}
 {% extends "base.html" %}
-
 {% block content %}
-<div class="auth-page">
-  <div class="auth-card">
 
-    <h1 class="auth-title">Welcome back</h1>
-    <p class="auth-subtitle">Sign in to continue.</p>
+<div class="screen">
+  {% if error %}
+    <p class="error-text">{{ error }}</p>
+  {% endif %}
 
-    {% if error %}
-      <p class="error-text">{{ error }}</p>
-    {% endif %}
+  <header class="hero">
+    <h1>Login</h1>
+  </header>
 
-    <form class="form" method="post">
-      <input class="field" name="email" type="email" placeholder="Email Address" required />
-      <input class="field" name="password" type="password" placeholder="Password" required />
+  <form class="form" method="post">
+    <input class="field" name="email" type="email" placeholder="Email Address" required />
+    <input class="field" name="password" type="password" placeholder="Password" required />
 
-      <button class="btn">Sign In</button>
-      <a href="{{ url_for('signup') }}" class="btn btn-secondary">Create Account</a>
-    </form>
-
-  </div>
+    <button class="btn">Sign In</button>
+    <a href="{{ url_for('signup') }}" class="btn-secondary">Create Account</a>
+  </form>
 </div>
 {% endblock %}

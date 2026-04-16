@@ -112,25 +112,7 @@ def _build_prompt_choices(current_prompt=None):
     """
     Generates the prompt choices
     """
-    pool = PROMPTS[:]
-    if len(pool) >= 3:
-        prompt_choices = random.sample(pool, 3)
-    else:
-        prompt_choices = pool
-
-    if current_prompt:
-        prompt_choices = [
-            prompt for prompt in prompt_choices if prompt != current_prompt
-        ]
-        prompt_choices.insert(0, current_prompt)
-
-    seen = []
-    deduped = []
-    for prompt in prompt_choices:
-        if prompt not in seen:
-            seen.append(prompt)
-            deduped.append(prompt)
-    return deduped[:3]
+    return [p for p in PROMPTS if p != current_prompt][:3]
 
 
 def _day_context(username, selected_date):
@@ -144,6 +126,11 @@ def _day_context(username, selected_date):
     next_date = (current_date + timedelta(days=1)).isoformat()
     return normalized_date, day_doc, prev_date, next_date
 
+def format_time(time_str):
+    if not time_str:
+        return None
+    dt = datetime.strptime(time_str, "%H:%M")
+    return dt.strftime("%-I:%M %p")
 
 @page_bp.route("/home", methods=["GET"])
 @login_required
@@ -162,6 +149,7 @@ def home():
         username=username,
         current_week=current_week,
         date=current_day,
+        format_time=format_time,
     )
 
 
@@ -180,6 +168,7 @@ def today():
         username=username,
         prev_date=prev_date,
         next_date=next_date,
+        format_time=format_time,
     )
 
 
@@ -211,15 +200,17 @@ def reflect():
     selected_date, day_doc, _, _ = _day_context(username, selected_date)
     existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
 
-    if mode == "continue" and existing_entry:
+    selected_prompt = request.args.get("prompt")
+
+    if mode == "continue" and existing_entry and not selected_prompt:
         current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
         transcript_value = existing_entry.get("transcript", "")
         mood_score = existing_entry.get("mood_score", "")
         stress_score = existing_entry.get("stress_score", "")
     else:
-        current_prompt = request.args.get("prompt") or PROMPTS[0]
+        current_prompt = selected_prompt or PROMPTS[0]
         transcript_value = ""
-        mood_score = ""
+        mood_score = 5
         stress_score = ""
         existing_entry = None
         existing_entry_index = None
@@ -239,6 +230,7 @@ def reflect():
         mood_score=mood_score,
         stress_score=stress_score,
     )
+
 
 
 @page_bp.route("/history/<date>")
