@@ -8,6 +8,7 @@ Machine learning client transcribing audio
 import time
 import whisper
 from pymongo import MongoClient
+from transformers import pipeline
 
 client = MongoClient("mongodb://mongodb:27017/")
 db = client["crimson_viper"]
@@ -25,25 +26,54 @@ collection = db["audio_jobs"]
 
 model = whisper.load_model("tiny")
 
-while True:
-    # i think this makes sense for us to be able to find any audio
-    # files that haven't yet been processed by the ml model
-    job = collection.find_one({"status": "unprocessed"})
+emotion_analyzer = pipeline(
+    "text-classification",
+    model="j-hartmann/emotion-english-distilroberta-base",
+    return_all_scores=False,
+)
+ALLOWED_EMOTIONS = {"anger", "disgust", "fear", "joy", "neutral", "sadness", "surprise"}
 
-    # if there exists an audio file that hasn't yet been processed,
-    # then we process it and then update the database
-    if job:
-        print("found an unprocessed audio file")
-        path = job["audio_path"]
 
-        result = model.transcribe(path, language="en")
-        print("transcribed audio file")
+def main():
+    """main loop that continuously checks for unprocessed audio files and processes them"""
+    while True:
+        # i think this makes sense for us to be able to find any audio
+        # files that haven't yet been processed by the ml model
+        job = collection.find_one({"status": "unprocessed"})
 
-        collection.update_one(
-            {"_id": job["_id"]},
-            # only update the text and status fields
-            {"$set": {"transcription": result["text"], "status": "processed"}},
-        )
+        # if there exists an audio file that hasn't yet been processed,
+        # then we process it and then update the database
+        if job:
+            print("found an unprocessed audio file")
+            path = job["audio_path"]
 
-        print("updated database")
-    time.sleep(2)
+            result = model.transcribe(path, language="en")
+            print("transcribed audio file")
+
+            text = result["text"]
+            if text and text.strip():
+                emotion_result = emotion_analyzer(text, truncation=True)
+                emotion_label = emotion_result[0]["label"].lower()
+                if emotion_label not in ALLOWED_EMOTIONS:
+                    emotion_label = "neutral"
+            else:
+                emotion_label = "neutral"
+
+            collection.update_one(
+                {"_id": job["_id"]},
+                # only update the text and status fields
+                {
+                    "$set": {
+                        "transcription": result["text"],
+                        "emotion": emotion_label,
+                        "status": "processed",
+                    }
+                },
+            )
+
+            print("updated database")
+        time.sleep(2)
+
+
+if __name__ == "__main__":
+    main()
