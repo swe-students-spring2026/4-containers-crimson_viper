@@ -326,7 +326,6 @@ def create_task_page():
     entry_date = _parse_date(request.form["date"]).isoformat()
     title = request.form.get("title", "").strip()
     deadline = request.form.get("deadline")
-    
     if deadline:
         deadline_value = deadline.strip()
     else:
