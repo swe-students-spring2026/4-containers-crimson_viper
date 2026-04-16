@@ -17,9 +17,11 @@
             <h3>Prompt</h3>
             <p>{{ current_prompt }}</p>
         </section>
-        
+
         <section class="content-card">
-            <form method="POST" action="{% if has_existing_entry %}{{ url_for('pages.update_entry_page', date=date, entry_index=entry_index) }}{% else %}{{ url_for('pages.create_entry_page') }}{% endif %}" class="entry-form">
+            <form method="POST"
+                action="{% if has_existing_entry %}{{ url_for('pages.update_entry_page', date=date, entry_index=entry_index) }}{% else %}{{ url_for('pages.create_entry_page') }}{% endif %}"
+                class="entry-form">
                 <input type="hidden" name="username" value="{{ username }}">
                 <input type="hidden" name="date" value="{{ date }}">
                 <input type="hidden" name="entry_type" value="prompt">
@@ -51,7 +53,10 @@
             </div>
             <div class="reflect-actions">
                 {% for prompt in prompts %}
-                <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt', prompt=prompt) }}" class="secondary-link">Prompt {{ loop.index }} </a>
+                <a class="secondary-link"
+                    href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt', prompt=prompt) }}">
+                    {{ prompt }}
+                </a>
                 {% endfor %}
             </div>
         </section>
@@ -60,7 +65,8 @@
     <nav class="bottom-nav">
         <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
         <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">Day</a>
-        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item active">Reflect</a>
+        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}"
+            class="nav-item active">Reflect</a>
     </nav>
 </div>
 {% endblock %}

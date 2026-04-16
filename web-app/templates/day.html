@@ -8,7 +8,7 @@
 {% set task_list = day_doc.tasks if day_doc and day_doc.tasks else [] %}
 
 <div class="screen">
-    <header class="day-header-card">
+    <header class="hero">
         <div class="day-switcher">
             <a href="{{ url_for('pages.today', username=username, date=prev_date) }}" class="day-arrow">‹</a>
             <div class="day-heading">
@@ -29,9 +29,12 @@
             <div class="task-list">
                 {% for task in task_list %}
                 {% set task_title = task.title if task.title else task.name if task.name else 'Untitled task' %}
-                <div class="task-row">
+                <div class="goal-row">
                     <div class="task-copy">
-                        <span class="task-name">{{ task_title }}</span>
+                        <span class="goal-name">{{ task_title }}</span>
+                        {% if task.deadline %}
+                         <span class="goal-time">{{ task.deadline }}</span>
+                        {% endif %}
                         <div class="reflect-actions">
                             <form method="POST" action="{{ url_for('pages.delete_task_page', date=date, task_index=loop.index0) }}">
                                 <input type="hidden" name="username" value="{{ username }}">
@@ -52,6 +55,7 @@
                 <input type="hidden" name="username" value="{{ username }}">
                 <input type="hidden" name="date" value="{{ date }}">
                 <input name="title" placeholder="+ Add Item" required>
+                <input name="deadline" type="time">
                 <button type="submit" class="primary-button">Add Task</button>
             </form>
         </section>
