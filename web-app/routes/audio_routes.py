@@ -17,6 +17,7 @@ audio_bp = Blueprint("audio", __name__)
 @audio_bp.route("/upload-audio", methods=["POST"])
 @login_required
 def upload_audio():
+    """Uploads the audio to database and adds to shared folder"""
     audio_file = request.files.get("audio")
 
     filename = f"{uuid.uuid4()}.wav"
