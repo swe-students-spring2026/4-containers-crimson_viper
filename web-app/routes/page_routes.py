@@ -3,8 +3,6 @@ Has the page routes for the app
 """
 
 from datetime import date as dt_date, datetime, timedelta
-import random
-
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 
@@ -127,6 +125,9 @@ def _day_context(username, selected_date):
     return normalized_date, day_doc, prev_date, next_date
 
 def format_time(time_str):
+    """
+    Formats a time string from HH:MM format to 12-hour format with AM/PM.
+    """
     if not time_str:
         return None
     dt = datetime.strptime(time_str, "%H:%M")
@@ -329,7 +330,7 @@ def create_task_page():
     if deadline:
         deadline_value = deadline.strip()
     else:
-        deadline_value = None 
+        deadline_value = None
     if title:
         add_task(
             username,
