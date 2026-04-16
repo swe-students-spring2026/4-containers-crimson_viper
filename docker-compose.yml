@@ -13,6 +13,8 @@ services:
     environment:
       - MONGO_URI=mongodb://mongodb:27017/
       - DB_NAME=crimson_viper
+    volumes:
+      - audio_data:/data/audio
 
   web-app:
     build: ./web-app
@@ -25,3 +27,8 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/
       - DB_NAME=crimson_viper
       - SECRET_KEY=secret-key
+    volumes:
+      - audio_data:/data/audio
+
+volumes:
+  audio_data:

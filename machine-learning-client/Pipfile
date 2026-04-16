@@ -8,6 +8,11 @@ requests = "*"
 pymongo = "*"
 python-dotenv = "*"
 pylint = "*"
+openai-whisper = "*"
+torch = "*"
+sounddevice = "*"
+scipy = "*"
+whisper = "*"
 black = "*"
 
 [dev-packages]
