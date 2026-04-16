@@ -67,7 +67,8 @@ def login():
         if user and user["password"] == password:
             login_user(User(user))
 
-            return redirect(url_for("pages.home", username=user["username"]))
+            # return redirect(url_for("pages.home", username=user["username"]))
+            return redirect(url_for("pages.home"))  
 
         return render_template("login.html", error="Invalid email or password.")
 
@@ -90,7 +91,7 @@ def signup():
         if db.users.find_one({"email": email}):
             return render_template("signup.html", error="Email already taken.")
 
-        # cannot resue usernmae
+        # cannot reuse usernmae
         if db.users.find_one({"username": username}):
             return render_template("signup.html", error="Username already taken.")
 

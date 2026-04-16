@@ -3,6 +3,7 @@ Manage journal entries and tasks
 """
 
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from uuid import uuid4
 
 from models.db import entries_collection

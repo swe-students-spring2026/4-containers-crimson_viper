@@ -25,3 +25,5 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/
       - DB_NAME=crimson_viper
       - SECRET_KEY=secret-key
+    volumes:
+      - ./web-app:/app

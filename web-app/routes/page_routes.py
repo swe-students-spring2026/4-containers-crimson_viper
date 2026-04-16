@@ -6,6 +6,7 @@ from datetime import date as dt_date, datetime, timedelta
 import random
 
 from flask import Blueprint, abort, redirect, render_template, request, url_for
+from flask_login import login_required, current_user
 
 from services.entry_service import (
     add_task,
@@ -144,12 +145,13 @@ def _day_context(username, selected_date):
     return normalized_date, day_doc, prev_date, next_date
 
 
-@page_bp.route("/", methods=["GET"])
+@page_bp.route("/home", methods=["GET"])
+@login_required
 def home():
     """
     Renders home.html
     """
-    username = _get_username(required=False)
+    username = current_user.username
     entries = get_all_entries(username) if username else []
     selected_date = request.args.get("date")
     current_week = _get_current_week(selected_date)
@@ -331,6 +333,12 @@ def create_task_page():
     username = _get_username()
     entry_date = _parse_date(request.form["date"]).isoformat()
     title = request.form.get("title", "").strip()
+    deadline = request.form.get("deadline")
+    
+    if deadline:
+        deadline_value = deadline.strip()
+    else:
+        deadline_value = None 
     if title:
         add_task(
             username,
@@ -338,6 +346,7 @@ def create_task_page():
             {
                 "title": title,
                 "completed": False,
+                "deadline": deadline_value
             },
         )
     return redirect(
@@ -397,3 +406,15 @@ def delete_task_page(date, task_index):
     return redirect(
         url_for("pages.today", username=username, date=entry_date) + "#tasks"
     )
+
+
+'''
+Some notes:
+Today's task doesn't have a deadline input. thus time is not displayed in home
+CSS is inconsistent for tasks between home n day
+home displays short version of entries js like intended. mb this will change to add a mood as well
+day view's header doesn't move to different dates.
+also time is in a different timezone.
+there needs to be a login and logout button on the home page when logged in. and login/signup buttons when logged out
+login needs better ui
+'''
