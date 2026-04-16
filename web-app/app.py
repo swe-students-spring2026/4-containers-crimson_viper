@@ -68,7 +68,7 @@ def login():
             login_user(User(user))
 
             # return redirect(url_for("pages.home", username=user["username"]))
-            return redirect(url_for("pages.home"))  
+            return redirect(url_for("pages.home"))
 
         return render_template("login.html", error="Invalid email or password.")
 

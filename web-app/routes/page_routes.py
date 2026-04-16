@@ -124,6 +124,7 @@ def _day_context(username, selected_date):
     next_date = (current_date + timedelta(days=1)).isoformat()
     return normalized_date, day_doc, prev_date, next_date
 
+
 def format_time(time_str):
     """
     Formats a time string from HH:MM format to 12-hour format with AM/PM.
@@ -132,6 +133,7 @@ def format_time(time_str):
         return None
     dt = datetime.strptime(time_str, "%H:%M")
     return dt.strftime("%-I:%M %p")
+
 
 @page_bp.route("/home", methods=["GET"])
 @login_required
@@ -231,7 +233,6 @@ def reflect():
         mood_score=mood_score,
         stress_score=stress_score,
     )
-
 
 
 @page_bp.route("/history/<date>")
@@ -335,11 +336,7 @@ def create_task_page():
         add_task(
             username,
             entry_date,
-            {
-                "title": title,
-                "completed": False,
-                "deadline": deadline_value
-            },
+            {"title": title, "completed": False, "deadline": deadline_value},
         )
     return redirect(
         url_for("pages.today", username=username, date=entry_date) + "#tasks"
