@@ -28,14 +28,16 @@ def upload_audio():
     file_path = os.path.join(audio_dir, filename)
     audio_file.save(file_path)
 
-    db.audio_jobs.insert_one({
-        "username": current_user.username,
-        "created_at": datetime.utcnow(),
-        "audio_path": file_path,
-        "status": "unprocessed",
-        "transcription": None,
-        "emotion": None
-    })
+    db.audio_jobs.insert_one(
+        {
+            "username": current_user.username,
+            "created_at": datetime.utcnow(),
+            "audio_path": file_path,
+            "status": "unprocessed",
+            "transcription": None,
+            "emotion": None,
+        }
+    )
 
     # we need to have a return statement for it to work
     return jsonify({"message": "Audio uploaded successfully"}), 200
