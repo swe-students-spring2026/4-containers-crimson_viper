@@ -16,17 +16,14 @@ from bson.objectid import ObjectId
 
 from routes.entry_routes import entry_bp
 from routes.page_routes import page_bp
+# we need to grab the database from the db.py file
+from models.db import db
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "secret-key")
 
 app.register_blueprint(entry_bp)
 app.register_blueprint(page_bp)
-
-# set up the database #database is different from backend's diary_db
-mongo_uri = os.getenv("MONGO_URI", "mongodb://mongodb:27017/crimson_viper")
-client = MongoClient(mongo_uri)
-db = client["crimson_viper"]
 
 
 # flask login
@@ -38,10 +35,10 @@ login_manager.login_view = "login"
 
 
 class User(UserMixin):
-    def __init__(self, user):
-        self.id = str(user["_id"])
-        self.email = user["email"]
-        self.username = user["username"]
+    def __init__(self, user_data):
+        self.id = str(user_data["_id"])
+        self.email = user_data["email"]
+        self.username = user_data["username"]
 
 
 @login_manager.user_loader
@@ -60,7 +57,8 @@ def load_user(user_id):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        email = request.form.get("email", "")
+        # emails arent case senstitive
+        email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
         # check the database
@@ -68,8 +66,7 @@ def login():
         if user and user["password"] == password:
             login_user(User(user))
 
-            # this should be updated to point to the home page
-            # return redirect(url_for("home"))
+            return redirect(url_for("pages.home", username=user["username"]))
 
         return render_template("login.html", error="Invalid email or password.")
 
@@ -79,17 +76,23 @@ def login():
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
-        email = request.form.get("email", "").strip()
+        # email not case sensititve
+        email = request.form.get("email", "").strip().lower()
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
+        # make sure that the user fills out everything
         if not email or not username or not password:
             return render_template("signup.html", error="All fields are required.")
 
+        # cannot reuse an email
         if db.users.find_one({"email": email}):
             return render_template("signup.html", error="Email already taken.")
 
-        # can input new fields later
+        # cannot resue usernmae
+        if db.users.find_one({"username": username}):
+            return render_template("signup.html", error="Username already taken.")
+
         db.users.insert_one(
             {
                 "email": email,
@@ -102,31 +105,17 @@ def signup():
     return render_template("signup.html")
 
 
-# this is for logging out when we set it up later
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("login"))
 
-# @app.route("/logout")
-# @login_required
-# def logout():
-#     logout_user()
-#     return redirect(url_for("login"))
-
-# @app.route("/")
-# def home():
-#     return render_template("base.html")
-
-# @app.route("/day/<date>")
-# def day(date):
-#     entry = get_entry_by_date(date)
-#     return render_template("day.html", date=date, entry=entry)
-
-# @app.route("/entries", methods=["POST"])
-# def create_entry_route():
-#     data = {
-#         "date": request.form["date"],
-#         "transcript": request.form["transcript"]
-#     }
-#     create_entry(data)
-#     return redirect("/")
+@app.route("/")
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for("pages.home", username=current_user.username))
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
