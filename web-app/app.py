@@ -106,13 +106,6 @@ def signup():
         return redirect(url_for("login"))
     return render_template("signup.html")
 
-
-@app.route("/record-audio")
-@login_required
-def record_audio():
-    return render_template("record_audio.html")
-
-
 @app.route("/logout")
 @login_required
 def logout():

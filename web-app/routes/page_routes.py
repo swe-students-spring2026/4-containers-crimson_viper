@@ -396,3 +396,13 @@ def delete_task_page(date, task_index):
     return redirect(
         url_for("pages.today", username=username, date=entry_date) + "#tasks"
     )
+
+@page_bp.route("/record-audio")
+@login_required
+def record_audio_page():
+    selected_date = request.args.get("date") or str(dt_date.today())
+    return render_template(
+        "record_audio.html",
+        username=current_user.username,
+        date=selected_date,
+    )
