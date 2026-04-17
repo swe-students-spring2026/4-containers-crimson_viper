@@ -150,13 +150,10 @@ def day():
     if mode == "continue" and existing_entry and not selected_prompt:
         current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
         transcript_value = existing_entry.get("transcript", "")
-        mood_score = existing_entry.get("mood_score", "")
-        stress_score = existing_entry.get("stress_score", "")
     else:
         current_prompt = selected_prompt or PROMPTS[0]
         transcript_value = ""
-        mood_score = 5
-        stress_score = ""
+
         existing_entry = None
         existing_entry_index = None
 
@@ -187,8 +184,6 @@ def day():
         existing_entry=existing_entry,
         existing_entry_index=existing_entry_index,
         transcript_value=transcript_value,
-        mood_score=mood_score,
-        stress_score=stress_score,
         audio_jobs=audio_jobs,
     )
 
