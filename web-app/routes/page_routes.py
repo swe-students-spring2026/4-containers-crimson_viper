@@ -17,6 +17,8 @@ from services.entry_service import (
     update_entry,
 )
 
+from models.db import db
+
 page_bp = Blueprint("pages", __name__)
 
 PROMPTS = [
@@ -134,12 +136,20 @@ def home():
 @page_bp.route("/day")
 @login_required
 def today():
-    """
-    Renders day.html
-    """
+    """Renders the day view for today or a selected date."""
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
+
+    audio_jobs = list(
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": normalized_date,
+            }
+        ).sort("created_at", -1)
+    )
+
     return render_template(
         "day.html",
         date=normalized_date,
@@ -147,17 +157,26 @@ def today():
         username=username,
         prev_date=prev_date,
         next_date=next_date,
+        audio_jobs=audio_jobs,
     )
 
 
 @page_bp.route("/day/<date>")
 @login_required
 def day(date):
-    """
-    Renders day.html
-    """
+    """Renders the day view for a specific date."""
     username = current_user.username
     normalized_date, entry, prev_date, next_date = _day_context(username, date)
+
+    audio_jobs = list(
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": normalized_date,
+            }
+        ).sort("created_at", -1)
+    )
+
     return render_template(
         "day.html",
         date=normalized_date,
@@ -165,6 +184,7 @@ def day(date):
         username=username,
         prev_date=prev_date,
         next_date=next_date,
+        audio_jobs=audio_jobs,
     )
 
 

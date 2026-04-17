@@ -6,7 +6,8 @@ from datetime import datetime
 import os
 import uuid
 
-from flask import Blueprint, request, redirect, url_for
+from bson import ObjectId
+from flask import Blueprint, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 
 from models.db import db
@@ -28,20 +29,23 @@ def upload_audio():
     file_path = os.path.join(audio_dir, filename)
     audio_file.save(file_path)
 
-    db.audio_jobs.insert_one(
+    selected_date = request.form.get("date")
+
+    insert_result = db.audio_jobs.insert_one(
         {
             "username": current_user.username,
+            "date": selected_date,
             "created_at": datetime.utcnow(),
             "audio_path": file_path,
             "status": "unprocessed",
             "transcription": None,
             "emotion": None,
-            "date": request.form.get("date"),  # Add this
-            "entry_type": request.form.get("entry_type"),  # Add this
-            "prompt_text": request.form.get("prompt_text"),  # Add this
+            "entry_type": request.form.get("entry_type"),
+            "prompt_text": request.form.get("prompt_text"),
         }
     )
     return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
+
 
 @audio_bp.route("/upload-text", methods=["POST"])
 @login_required
@@ -55,9 +59,35 @@ def upload_text():
             "status": "unprocessed",
             "transcription": request.form.get("transcript"),
             "emotion": None,
-            "date": request.form.get("date"),  # Add this
-            "entry_type": request.form.get("entry_type"),  # Add this
-            "prompt_text": request.form.get("prompt_text"),  # Add this
+            "date": request.form.get("date"),
+            "entry_type": request.form.get("entry_type"),
+            "prompt_text": request.form.get("prompt_text"),
         }
     )
     return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
+
+
+@audio_bp.route("/audio-status/<job_id>", methods=["GET"])
+@login_required
+def audio_status(job_id):
+    """Returns the processing status of one audio job."""
+    job = db.audio_jobs.find_one(
+        {
+            "_id": ObjectId(job_id),
+            "username": current_user.username,
+        }
+    )
+
+    if not job:
+        return jsonify({"error": "Audio job not found"}), 404
+
+    return (
+        jsonify(
+            {
+                "status": job.get("status"),
+                "transcription": job.get("transcription"),
+                "emotion": job.get("emotion"),
+            }
+        ),
+        200,
+    )
