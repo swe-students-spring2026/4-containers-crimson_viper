@@ -27,22 +27,28 @@
                 <input type="hidden" name="entry_type" value="prompt">
                 <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
 
-                <label class="form-label">How do you feel right now?</label>
-                <input type="range" name="mood_score" min="1" max="10" value="{{ mood_score|default(5) }}">
-
-                <!-- <label class="form-label">How did I handle stress or frustrations today?</label>
-                <input type="range" name="stress_score" min="1" max="10" value="{{ stress_score|default(5) }}"> -->
-
-                <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
-
-                <div class="voice-bar">
+                <label class="form-label">Audio Entry</label>
+                <div class="voice-bar" id="voiceBar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
                         <rect x="9" y="2" width="6" height="12" rx="3"></rect>
                         <path d="M5 10a7 7 0 0 0 14 0"></path>
                         <line x1="12" y1="17" x2="12" y2="22"></line>
                     </svg>
                 </div>
+            </form>
+        </section>
 
+        <section class="content-card">
+            <form method="POST"
+                action="{% if has_existing_entry %}{{ url_for('pages.update_entry_page', date=date, entry_index=entry_index) }}{% else %}{{ url_for('pages.create_entry_page') }}{% endif %}"
+                class="entry-form">
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input type="hidden" name="entry_type" value="prompt">
+                <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
+
+                <label class="form-label">Text Entry</label>
+                <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
                 <button type="submit" class="primary-button">Save</button>
             </form>
         </section>
@@ -64,9 +70,56 @@
 
     <nav class="bottom-nav">
         <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
-        <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">Day</a>
         <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}"
             class="nav-item active">Reflect</a>
+        <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">History</a>
     </nav>
 </div>
+
+
+<script>
+// this handles collecting audio
+let mediaRecorder;
+let chunks = [];
+let isRecording = false;
+let audioStream = null;
+const voiceBar = document.getElementById("voiceBar");
+
+voiceBar.onclick = async () => {
+    if (!isRecording) {
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(audioStream);
+        chunks = [];
+        
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(chunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "recording.webm");
+            formData.append("username", "{{ username }}");
+            formData.append("date", "{{ date }}");
+            formData.append("entry_type", "prompt");
+            formData.append("prompt_text", "{{ current_prompt }}");
+            
+            await fetch("/upload-audio", { method: "POST", body: formData });
+            
+            audioStream.getTracks().forEach(track => track.stop());
+            audioStream = null;
+            voiceBar.style.backgroundColor = "";
+            voiceBar.querySelector("svg").style.stroke = "black";
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        voiceBar.style.backgroundColor = "black";
+        voiceBar.querySelector("svg").style.stroke = "white";
+        
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+    }
+};
+</script>
+
 {% endblock %}
