@@ -31,7 +31,7 @@ def upload_audio():
 
     selected_date = request.form.get("date")
 
-    insert_result = db.audio_jobs.insert_one(
+    db.audio_jobs.insert_one(
         {
             "username": current_user.username,
             "date": selected_date,
@@ -44,8 +44,13 @@ def upload_audio():
             "prompt_text": request.form.get("prompt_text"),
         }
     )
-    return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
-
+    return redirect(
+        url_for(
+            'pages.reflect',
+            username=request.form.get('username'),
+            date=request.form.get('date')
+        )
+    )
 
 @audio_bp.route("/upload-text", methods=["POST"])
 @login_required
@@ -64,7 +69,13 @@ def upload_text():
             "prompt_text": request.form.get("prompt_text"),
         }
     )
-    return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
+    return redirect(
+        url_for(
+            'pages.reflect',
+            username=request.form.get('username'),
+            date=request.form.get('date')
+        )
+    )
 
 
 @audio_bp.route("/audio-status/<job_id>", methods=["GET"])
