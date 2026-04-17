@@ -144,8 +144,20 @@ body {
 .day-switcher {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 50px;
+    position: relative;
+    width: 100%;
+}
+
+.day-switcher .day-arrow:first-child {
+    position: absolute;
+    left: 24px;
+}
+
+.day-switcher .day-arrow:last-child {
+    position: absolute;
+    right: 24px;
 }
 
 .day-arrow {
@@ -381,6 +393,10 @@ body {
     padding: 14px 16px;
 }
 
+.history-entry-card {
+    padding: 14px 16px;
+}
+
 .entry-card {
     display: block;
     text-decoration: none;
@@ -414,6 +430,70 @@ body {
     margin: 0;
 }
 
+.history-entry-textbox .journal-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 6;
+    line-clamp: 6;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+.journal-entry-title {
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 16px;
+    font-weight: 700;
+}
+
+.history-entry-layout {
+    display: flex;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.history-entry-textbox {
+    width: 50%;
+    min-height: 170px;
+    border: 1px solid #000;
+    border-radius: 8px;
+    padding: 18px;
+    overflow: hidden;
+}
+
+.history-entry-side {
+    width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.history-entry-tag {
+    text-transform: capitalize;
+}
+
+.history-entry-mood {
+    margin: 0;
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.history-entry-delete-form {
+    margin-top: auto;
+}
+
+.history-entry-delete {
+    border: 1px solid #000;
+    border-radius: 5px;
+    background: #000;
+    color: #fff;
+    padding: 8px 14px;
+    font: inherit;
+    cursor: pointer;
+}
+
 .entry-date,
 .entry-count,
 .journal-index,
@@ -441,6 +521,13 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+}
+
+.task-copy form {
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 .entry-form {
