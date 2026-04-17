@@ -152,6 +152,7 @@ def home():
         date=current_day,
     )
 
+
 @page_bp.route("/day")
 @login_required
 def today():

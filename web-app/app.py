@@ -106,6 +106,7 @@ def signup():
         return redirect(url_for("login"))
     return render_template("signup.html")
 
+
 @app.route("/logout")
 @login_required
 def logout():

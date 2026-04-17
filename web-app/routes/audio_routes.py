@@ -11,6 +11,7 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from models.db import db
+
 audio_bp = Blueprint("audio", __name__)
 
 
@@ -42,12 +43,16 @@ def upload_audio():
         }
     )
 
-    return jsonify(
-        {
-            "message": "Audio uploaded successfully",
-            "job_id": str(insert_result.inserted_id),
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "message": "Audio uploaded successfully",
+                "job_id": str(insert_result.inserted_id),
+            }
+        ),
+        200,
+    )
+
 
 @audio_bp.route("/audio-status/<job_id>", methods=["GET"])
 @login_required
@@ -63,10 +68,13 @@ def audio_status(job_id):
     if not job:
         return jsonify({"error": "Audio job not found"}), 404
 
-    return jsonify(
-        {
-            "status": job.get("status"),
-            "transcription": job.get("transcription"),
-            "emotion": job.get("emotion"),
-        }
-    ), 200
+    return (
+        jsonify(
+            {
+                "status": job.get("status"),
+                "transcription": job.get("transcription"),
+                "emotion": job.get("emotion"),
+            }
+        ),
+        200,
+    )
