@@ -161,7 +161,7 @@ def day():
         existing_entry_index = None
 
     prompt_choices = _build_prompt_choices(current_prompt)
-    
+
     audio_jobs = list(
         db.audio_jobs.find(
             {
@@ -170,7 +170,7 @@ def day():
             }
         ).sort("created_at", -1)
     )
-    
+
     is_today = selected_date == dt_date.today().isoformat()
 
     return render_template(
@@ -191,6 +191,7 @@ def day():
         stress_score=stress_score,
         audio_jobs=audio_jobs,
     )
+
 
 @page_bp.route("/reflect")
 @login_required
@@ -349,9 +350,7 @@ def create_task_page():
             entry_date,
             {"title": title, "completed": False, "deadline": deadline_value},
         )
-    return redirect(
-        url_for("pages.day", username=username) + "#tasks"
-    )
+    return redirect(url_for("pages.day", username=username) + "#tasks")
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/edit", methods=["POST"])
@@ -369,9 +368,7 @@ def update_task_page(date, task_index):
         "completed": completed,
     }
     edit_task(username, entry_date, task_index, updated_task)
-    return redirect(
-        url_for("pages.day", username=username) + "#tasks"
-    )
+    return redirect(url_for("pages.day", username=username) + "#tasks")
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/toggle", methods=["POST"])
@@ -392,9 +389,7 @@ def toggle_task_page(date, task_index):
             "completed": not task.get("completed", False),
         }
         edit_task(username, entry_date, task_index, updated_task)
-    return redirect(
-        url_for("pages.day", username=username) + "#tasks"
-    )
+    return redirect(url_for("pages.day", username=username) + "#tasks")
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/delete", methods=["POST"])
@@ -407,5 +402,5 @@ def delete_task_page(date, task_index):
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
     return redirect(
-        url_for("pages.reflect", username=username, date = entry_date) + "#tasks"
+        url_for("pages.reflect", username=username, date=entry_date) + "#tasks"
     )
