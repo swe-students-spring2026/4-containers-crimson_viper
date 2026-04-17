@@ -201,7 +201,7 @@ def reflect():
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     mode = request.args.get("mode", "prompt")
-    selected_date, day_doc, _, _ = _day_context(username, selected_date)
+    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
     existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
 
     selected_prompt = request.args.get("prompt")
@@ -220,6 +220,7 @@ def reflect():
         existing_entry_index = None
 
     prompt_choices = _build_prompt_choices(current_prompt)
+    is_today = selected_date == dt_date.today().isoformat()
 
     return render_template(
         "reflect.html",
@@ -233,7 +234,10 @@ def reflect():
         transcript_value=transcript_value,
         mood_score=mood_score,
         stress_score=stress_score,
-        entry=day_doc
+        entry=day_doc,
+        prev_date=prev_date,
+        next_date=next_date,
+        is_today=is_today,
     )
 
 
@@ -322,7 +326,7 @@ def delete_entry_page(date, entry_index):
     username = current_user.username
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
-    return redirect(url_for("pages.day", username=username, date=entry_date))
+    return redirect(url_for("pages.reflect", username=username, date=entry_date))
 
 
 @page_bp.route("/tasks/new", methods=["POST"])
@@ -403,5 +407,5 @@ def delete_task_page(date, task_index):
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
     return redirect(
-        url_for("pages.day", username=username) + "#tasks"
+        url_for("pages.reflect", username=username, date = entry_date) + "#tasks"
     )
