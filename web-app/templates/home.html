@@ -83,7 +83,7 @@
             <div class="entries-grid">
                 {% if entries %}
                     {% for entry in entries %}
-                        <a href="{{ url_for('pages.day', date=entry.date, username=username) }}" class="entry-box {% if loop.first %}selected{% endif %}">
+                        <a href="{{ url_for('pages.reflect', date=entry.date, username=username) }}" class="entry-box {% if loop.first %}selected{% endif %}">
                             <span class="entry-month">
                                 {{ entry.date[5:7]|upper }}
                             </span>

@@ -46,7 +46,7 @@ def upload_audio():
     )
     return redirect(
         url_for(
-            "pages.reflect",
+            "pages.day",
             username=request.form.get("username"),
             date=request.form.get("date"),
         )
@@ -72,7 +72,7 @@ def upload_text():
     )
     return redirect(
         url_for(
-            "pages.reflect",
+            "pages.day",
             username=request.form.get("username"),
             date=request.form.get("date"),
         )
