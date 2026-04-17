@@ -233,6 +233,7 @@ def reflect():
         transcript_value=transcript_value,
         mood_score=mood_score,
         stress_score=stress_score,
+        entry=day_doc
     )
 
 
