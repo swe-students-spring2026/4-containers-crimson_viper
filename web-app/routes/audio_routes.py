@@ -48,7 +48,6 @@ def upload_audio():
         url_for(
             "pages.day",
             username=request.form.get("username"),
-            date=request.form.get("date"),
         )
     )
 
@@ -74,7 +73,6 @@ def upload_text():
         url_for(
             "pages.day",
             username=request.form.get("username"),
-            date=request.form.get("date"),
         )
     )
 

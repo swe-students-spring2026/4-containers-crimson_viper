@@ -345,7 +345,7 @@ def create_task_page():
             {"title": title, "completed": False, "deadline": deadline_value},
         )
     return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username) + "#tasks"
     )
 
 
@@ -365,7 +365,7 @@ def update_task_page(date, task_index):
     }
     edit_task(username, entry_date, task_index, updated_task)
     return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username) + "#tasks"
     )
 
 
@@ -388,7 +388,7 @@ def toggle_task_page(date, task_index):
         }
         edit_task(username, entry_date, task_index, updated_task)
     return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username) + "#tasks"
     )
 
 
@@ -402,5 +402,5 @@ def delete_task_page(date, task_index):
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
     return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username) + "#tasks"
     )
