@@ -7,7 +7,7 @@ import os
 import uuid
 
 from bson import ObjectId
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 
 from models.db import db
@@ -31,7 +31,7 @@ def upload_audio():
 
     selected_date = request.form.get("date")
 
-    insert_result = db.audio_jobs.insert_one(
+    db.audio_jobs.insert_one(
         {
             "username": current_user.username,
             "date": selected_date,
@@ -40,17 +40,40 @@ def upload_audio():
             "status": "unprocessed",
             "transcription": None,
             "emotion": None,
+            "entry_type": request.form.get("entry_type"),
+            "prompt_text": request.form.get("prompt_text"),
         }
     )
+    return redirect(
+        url_for(
+            "pages.day",
+            username=request.form.get("username"),
+        )
+    )
 
-    return (
-        jsonify(
-            {
-                "message": "Audio uploaded successfully",
-                "job_id": str(insert_result.inserted_id),
-            }
-        ),
-        200,
+
+@audio_bp.route("/upload-text", methods=["POST"])
+@login_required
+def upload_text():
+    """Uploads the text to database"""
+    db.audio_jobs.insert_one(
+        {
+            "username": request.form.get("username"),
+            "created_at": datetime.utcnow(),
+            "audio_path": None,
+            "status": "unprocessed",
+            "transcription": request.form.get("transcript"),
+            "emotion": None,
+            "date": request.form.get("date"),
+            "entry_type": request.form.get("entry_type"),
+            "prompt_text": request.form.get("prompt_text"),
+        }
+    )
+    return redirect(
+        url_for(
+            "pages.day",
+            username=request.form.get("username"),
+        )
     )
 
 

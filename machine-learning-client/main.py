@@ -12,17 +12,8 @@ from transformers import pipeline
 
 client = MongoClient("mongodb://mongodb:27017/")
 db = client["crimson_viper"]
-
-# we still need to decide how we are handling the audio files.
-# where is the path to the files stored? It would make sense if
-# we just make an entirely separate collection that stores:
-# 1) userid of whoever created the audio file
-# 2) the date that the audio file was uploaded to the database
-# 3) whether or not the audio file has been processed
-# 4) the file path to the audio file itself
-# that is how this is handled here.
-
-collection = db["audio_jobs"]
+audio_collection = db["audio_jobs"]
+entries_collection = db["entries"]
 
 model = whisper.load_model("tiny")
 
@@ -39,18 +30,27 @@ def main():
     while True:
         # i think this makes sense for us to be able to find any audio
         # files that haven't yet been processed by the ml model
-        job = collection.find_one({"status": "unprocessed"})
+        job = audio_collection.find_one({"status": "unprocessed"})
 
         # if there exists an audio file that hasn't yet been processed,
         # then we process it and then update the database
         if job:
             print("found an unprocessed audio file")
             path = job["audio_path"]
+            username = job["username"]
+            created_at = job["created_at"]
+            date = job.get("date")  # Add this line
+            entry_type = job.get("entry_type", "journal")
+            prompt_text = job.get("prompt_text", "")
 
-            result = model.transcribe(path, language="en")
-            print("transcribed audio file")
+            if path:
+                result = model.transcribe(path, language="en")
+                print("transcribed audio file")
+                text = result["text"]
+            else:
+                text = job.get("transcription", "")
+                result = {"text": text}
 
-            text = result["text"]
             if text and text.strip():
                 emotion_result = emotion_analyzer(text, truncation=True)
                 emotion_label = emotion_result[0]["label"].lower()
@@ -59,16 +59,33 @@ def main():
             else:
                 emotion_label = "neutral"
 
-            collection.update_one(
+            audio_collection.update_one(
                 {"_id": job["_id"]},
                 # only update the text and status fields
                 {
                     "$set": {
-                        "transcription": result["text"],
+                        "transcription": text,
                         "emotion": emotion_label,
                         "status": "processed",
                     }
                 },
+            )
+
+            entries_collection.update_one(
+                {"username": username, "date": date},
+                {
+                    "$setOnInsert": {"username": username, "date": date, "tasks": []},
+                    "$push": {
+                        "journal_entries": {
+                            "transcript": text,
+                            "emotion": emotion_label,
+                            "entry_type": entry_type,
+                            "prompt_text": prompt_text,
+                            "created_at": created_at.isoformat(),
+                        }
+                    },
+                },
+                upsert=True,
             )
 
             print("updated database")

@@ -64,7 +64,7 @@
             <div class="journal-list">
                 {% for journal_entry in journal_entries %}
                 {% set transcript_text = journal_entry.transcript if journal_entry.transcript else 'No text saved.' %}
-                {% set mood_value = journal_entry.mood if journal_entry.mood else journal_entry.mood_score if journal_entry.mood_score else 'N/A' %}
+                {% set mood_value = journal_entry.emotion if journal_entry.emotion else journal_entry.mood_score if journal_entry.mood_score else 'N/A' %}
                 <div class="journal-card history-entry-card">
                     <div class="journal-entry-title">Entry {{ loop.index }}</div>
                     <div class="history-entry-layout">
@@ -73,7 +73,7 @@
                         </div>
                         <div class="history-entry-side">
                             <span class="entry-meta history-entry-tag">Type: {{ journal_entry.entry_type|default('journal') }}</span>
-                            <p class="history-entry-mood">Mood: {{ mood_value }}</p>
+                            <p class="history-entry-mood">Mood: {{ mood_value|title }}</p>
                             <form method="POST" action="{{ url_for('pages.delete_entry_page', date=date, entry_index=loop.index0) }}" class="history-entry-delete-form">
                                 <input type="hidden" name="username" value="{{ username }}">
                                 <input type="hidden" name="next_page" value="reflect">
@@ -95,7 +95,7 @@
 
     <nav class="bottom-nav">
         <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
-        <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">Day</a>
+        <a href="{{ url_for('pages.day', username=username) }}" class="nav-item">Today</a>
         <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}"
             class="nav-item active">History</a>
     </nav>

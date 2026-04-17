@@ -1,235 +1,123 @@
 {% extends "base.html" %}
 
-{% block title %}Day View{% endblock %}
+{% block title %}Reflect{% endblock %}
 
 {% block content %}
-{% set day_doc = entry if entry else {} %}
-{% set journal_entries = day_doc.journal_entries if day_doc and day_doc.journal_entries else [] %}
-{% set task_list = day_doc.tasks if day_doc and day_doc.tasks else [] %}
-{% set daily_audio = audio_jobs if audio_jobs else [] %}
+{% set entry_index = existing_entry_index if existing_entry_index is defined else none %}
+{% set has_existing_entry = existing_entry is defined and existing_entry and entry_index is not none %}
 
 <div class="screen">
     <header class="hero">
-        <div class="day-switcher">
-            <a href="{{ url_for('pages.today', username=username, date=prev_date) }}" class="day-arrow">‹</a>
-            <div class="day-heading">
-                <p class="day-label">Day View</p>
-                <h1>{{ date }}</h1>
-            </div>
-            <a href="{{ url_for('pages.today', username=username, date=next_date) }}" class="day-arrow">›</a>
-        </div>
+        <h1>Today</h1>
+        <p class="hero-subtitle">{{ date }}</p>
     </header>
 
     <main class="main-content">
-        <section class="content-card">
-            <div class="section-header">
-                <h3 class="section-title">TODAY'S TASKS</h3>
-            </div>
-
-            {% if task_list %}
-            <div class="task-list">
-                {% for task in task_list %}
-                {% set task_title = task.title if task.title else task.name if task.name else 'Untitled task' %}
-                <div class="goal-row">
-                    <div class="task-copy">
-                        <span class="goal-name">{{ task_title }}</span>
-                        {% if task.deadline %}
-                         <span class="goal-time">{{ task.deadline }}</span>
-                        {% endif %}
-                        <div class="reflect-actions">
-                            <form method="POST" action="{{ url_for('pages.delete_task_page', date=date, task_index=loop.index0) }}">
-                                <input type="hidden" name="username" value="{{ username }}">
-                                <button type="submit" class="text-button">Remove</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <div class="empty-state-card">
-                <p class="empty-text">No tasks yet for this day.</p>
-            </div>
-            {% endif %}
-
-            <form method="POST" action="{{ url_for('pages.create_task_page') }}" class="entry-form inline-form">
-                <input type="hidden" name="username" value="{{ username }}">
-                <input type="hidden" name="date" value="{{ date }}">
-                <input name="title" placeholder="+ Add Item" required>
-                <input name="deadline" type="time">
-                <button type="submit" class="primary-button">Add Task</button>
-            </form>
+        <section class="prompt-card">
+            <h3>Prompt</h3>
+            <p>{{ current_prompt }}</p>
         </section>
 
         <section class="content-card">
-            <div class="section-header">
-                <h3 class="section-title">WRITE</h3>
-            </div>
-            <form method="POST" action="{{ url_for('pages.create_entry_page') }}" class="entry-form">
+            <form method="POST"
+                action="{% if has_existing_entry %}{{ url_for('pages.update_entry_page', date=date, entry_index=entry_index) }}{% else %}{{ url_for('pages.create_entry_page') }}{% endif %}"
+                class="entry-form">
                 <input type="hidden" name="username" value="{{ username }}">
                 <input type="hidden" name="date" value="{{ date }}">
-                <input type="hidden" name="entry_source" value="journal" id="entry-source-input">
+                <input type="hidden" name="entry_type" value="prompt">
+                <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
 
-                <textarea id="journal-textarea" name="transcript" placeholder="Write your Journal Entry"></textarea>
-
-                <button id="mic-btn" class="voice-bar" type="button">
+                <label class="form-label">Audio Entry</label>
+                <div class="voice-bar" id="voiceBar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
                         <rect x="9" y="2" width="6" height="12" rx="3"></rect>
                         <path d="M5 10a7 7 0 0 0 14 0"></path>
                         <line x1="12" y1="17" x2="12" y2="22"></line>
                     </svg>
-                </button>
-
-                <button type="submit" class="primary-button">Save</button>
+                </div>
             </form>
         </section>
         
         <section class="content-card">
-            <div class="section-header">
-                <h3 class="section-title">AUDIO RECORDINGS</h3>
-            </div>
-
-            {% if daily_audio %}
-                <div class="journal-list">
-                    {% for audio in daily_audio %}
-                        <div class="journal-card">
-                            <div class="journal-card-top">
-                                <span class="journal-index">Recording {{ loop.index }}</span>
-                                <span class="entry-meta">{{ audio.status }}</span>
-                            </div>
-                            <p class="journal-summary">
-                                Transcript:
-                                {{ audio.transcription if audio.transcription else "Processing transcription..." }}
-                            </p>
-                            <p class="journal-summary">
-                                Emotion:
-                                {{ audio.emotion if audio.emotion else "Not analyzed yet" }}
-                            </p>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="empty-state-card">
-                    <p class="empty-text">No audio recordings yet for this day.</p>
-                </div>
-            {% endif %}
+            <form method="POST"
+                action="{{ url_for('audio.upload_text') }}"
+                class="entry-form">
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input type="hidden" name="entry_type" value="prompt">
+                <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
+                <label class="form-label">Text Entry</label>
+                <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
+                <button type="submit" class="primary-button">Save</button>
+            </form>
         </section>
 
         <section class="content-card">
             <div class="section-header">
-                <h3 class="section-title">REFLECT</h3>
+                <h3 class="section-title">More prompts</h3>
             </div>
             <div class="reflect-actions">
-                <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="secondary-link">Reflect on a new prompt</a>
-                <a href="{{ url_for('pages.reflect', username=username, date=date, mode='continue') }}" class="secondary-link">Continue previous thoughts</a>
-            </div>
-        </section>
-
-        <section class="content-card entries-section">
-            <div class="section-header">
-                <h3 class="section-title">JOURNAL ENTRIES</h3>
-            </div>
-
-            {% if journal_entries %}
-            <div class="journal-list">
-                {% for journal_entry in journal_entries %}
-                <div class="journal-card">
-                    <div class="journal-card-top">
-                        <span class="journal-index">Entry {{ loop.index }}</span>
-                        <span class="entry-meta">{{ journal_entry.entry_type|default('journal') }}</span>
-                    </div>
-                    <p class="journal-summary">{{ journal_entry.transcript }}</p>
-                </div>
+                {% for prompt in prompts %}
+                <a class="secondary-link"
+                    href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt', prompt=prompt) }}">
+                    {{ prompt }}
+                </a>
                 {% endfor %}
             </div>
-            {% else %}
-            <div class="empty-state-card">
-                <p class="empty-text">No journal entries yet for this day.</p>
-            </div>
-            {% endif %}
         </section>
     </main>
 
     <nav class="bottom-nav">
         <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
-        <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item active">Day</a>
-        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">Reflect</a>
+        <a href="{{ url_for('pages.day', username=username)}}" class="nav-item active">Today</a>
+        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">History</a>
     </nav>
 </div>
 
+
 <script>
-  let mediaRecorder = null;
-  let chunks = [];
-  let isRecording = false;
+// this handles collecting audio
+let mediaRecorder;
+let chunks = [];
+let isRecording = false;
+let audioStream = null;
+const voiceBar = document.getElementById("voiceBar");
 
-  const micBtn = document.getElementById("mic-btn");
-  const textarea = document.getElementById("journal-textarea");
-  const entrySourceInput = document.getElementById("entry-source-input");
-
-  async function pollTranscript(jobId) {
-    for (let i = 0; i < 30; i++) {
-      const response = await fetch(`/audio-status/${jobId}`);
-      const data = await response.json();
-
-      if (data.status === "processed") {
-        textarea.value = data.transcription || "";
-        entrySourceInput.value = "audio";
-        saveEntryBtn.disabled = false;
-        saveEntryBtn.textContent = "Save";
-        return;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
-    alert("Audio uploaded, but transcription is still processing.");
-  }
-
-  micBtn.onclick = async () => {
+voiceBar.onclick = async () => {
     if (!isRecording) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-        mediaRecorder = new MediaRecorder(stream);
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(audioStream);
         chunks = [];
-
-        mediaRecorder.ondataavailable = (e) => {
-          chunks.push(e.data);
-        };
-
+        
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(chunks, { type: "audio/wav" });
-
-          const formData = new FormData();
-          formData.append("date", "{{ date }}");
-          formData.append("audio", audioBlob, "recording.wav");
-
-          const response = await fetch("/upload-audio", {
-            method: "POST",
-            body: formData,
-          });
-
-          if (!response.ok) {
-            alert("Failed to upload audio.");
-            return;
-          }
-
-          const data = await response.json();
-          await pollTranscript(data.job_id);
+            const audioBlob = new Blob(chunks, { type: "audio/webm" });
+            const formData = new FormData();
+            formData.append("audio", audioBlob, "recording.webm");
+            formData.append("username", "{{ username }}");
+            formData.append("date", "{{ date }}");
+            formData.append("entry_type", "prompt");
+            formData.append("prompt_text", "{{ current_prompt }}");
+            
+            await fetch("/upload-audio", { method: "POST", body: formData });
+            
+            audioStream.getTracks().forEach(track => track.stop());
+            audioStream = null;
+            voiceBar.style.backgroundColor = "";
+            voiceBar.querySelector("svg").style.stroke = "black";
         };
-
+        
         mediaRecorder.start();
         isRecording = true;
-        micBtn.classList.add("recording");
-      } catch (error) {
-        console.error(error);
-        alert("Unable to access microphone.");
-      }
+        voiceBar.style.backgroundColor = "black";
+        voiceBar.querySelector("svg").style.stroke = "white";
+        
     } else {
-      mediaRecorder.stop();
-      isRecording = false;
-      micBtn.classList.remove("recording");
+        mediaRecorder.stop();
+        isRecording = false;
     }
-  };
+};
 </script>
+
 {% endblock %}

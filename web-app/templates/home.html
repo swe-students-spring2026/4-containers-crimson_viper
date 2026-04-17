@@ -38,7 +38,7 @@
         <section class="prompt-card">
             <h3>Why journal?</h3>
             <p>Journaling helps boost productivity through daily-small step goal setting</p>
-            <a href="{{ url_for('pages.today', username=username) }}" class="prompt-link">Start now →</a>
+            <a href="{{ url_for('pages.day', username=username) }}" class="prompt-link">Start now →</a>
         </section>
 
         <hr class="divider">
@@ -83,7 +83,7 @@
             <div class="entries-grid">
                 {% if entries %}
                     {% for entry in entries %}
-                        <a href="{{ url_for('pages.day', date=entry.date, username=username) }}" class="entry-box {% if loop.first %}selected{% endif %}">
+                        <a href="{{ url_for('pages.reflect', date=entry.date, username=username) }}" class="entry-box {% if loop.first %}selected{% endif %}">
                             <span class="entry-month">
                                 {{ entry.date[5:7]|upper }}
                             </span>
@@ -111,8 +111,8 @@
         </section>
         <nav class="bottom-nav">
             <a href="{{ url_for('pages.home', username=username) }}" class="nav-item active">Home</a>
-            <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item">Day</a>
-            <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">Reflect</a>
+            <a href="{{ url_for('pages.day', username=username) }}" class="nav-item">Today</a>
+            <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}"class="nav-item">History</a>
         </nav>
     </main>
 
