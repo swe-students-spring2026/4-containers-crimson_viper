@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {% if error %}
-    <p class="error-text">{{ error }}</p>
-  {% endif %}
+
 <div class="screen">
 
   <header class="hero">
@@ -11,6 +9,9 @@
   </header>
   
   <form class="form" method="post">
+    {% if error %}
+      <div class="error-text">{{ error }}</div>
+    {% endif %}
     <input class="field" name="email" type="email" placeholder="Email Address" required />
     <input class="field" name="username" placeholder="Username" required />
     <input class="field" name="password" type="password" placeholder="Password" required />
