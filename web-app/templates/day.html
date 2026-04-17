@@ -68,6 +68,7 @@
             <form method="POST" action="{{ url_for('pages.create_entry_page') }}" class="entry-form">
                 <input type="hidden" name="username" value="{{ username }}">
                 <input type="hidden" name="date" value="{{ date }}">
+                <input type="hidden" name="entry_source" value="journal" id="entry-source-input">
 
                 <textarea id="journal-textarea" name="transcript" placeholder="Write your Journal Entry"></textarea>
 
@@ -163,6 +164,7 @@
 
   const micBtn = document.getElementById("mic-btn");
   const textarea = document.getElementById("journal-textarea");
+  const entrySourceInput = document.getElementById("entry-source-input");
 
   async function pollTranscript(jobId) {
     for (let i = 0; i < 30; i++) {
@@ -171,6 +173,9 @@
 
       if (data.status === "processed") {
         textarea.value = data.transcription || "";
+        entrySourceInput.value = "audio";
+        saveEntryBtn.disabled = false;
+        saveEntryBtn.textContent = "Save";
         return;
       }
 
