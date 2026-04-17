@@ -46,11 +46,12 @@ def upload_audio():
     )
     return redirect(
         url_for(
-            'pages.reflect',
-            username=request.form.get('username'),
-            date=request.form.get('date')
+            "pages.reflect",
+            username=request.form.get("username"),
+            date=request.form.get("date"),
         )
     )
+
 
 @audio_bp.route("/upload-text", methods=["POST"])
 @login_required
@@ -71,9 +72,9 @@ def upload_text():
     )
     return redirect(
         url_for(
-            'pages.reflect',
-            username=request.form.get('username'),
-            date=request.form.get('date')
+            "pages.reflect",
+            username=request.form.get("username"),
+            date=request.form.get("date"),
         )
     )
 
