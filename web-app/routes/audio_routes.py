@@ -4,14 +4,13 @@ Audio routes
 
 from datetime import datetime
 import os
-from unittest import result
 import uuid
 
+from bson import ObjectId
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
 
 from models.db import db
-from bson import ObjectId
 audio_bp = Blueprint("audio", __name__)
 
 
@@ -31,7 +30,7 @@ def upload_audio():
 
     selected_date = request.form.get("date")
 
-    result = db.audio_jobs.insert_one(
+    insert_result = db.audio_jobs.insert_one(
         {
             "username": current_user.username,
             "date": selected_date,
@@ -46,7 +45,7 @@ def upload_audio():
     return jsonify(
         {
             "message": "Audio uploaded successfully",
-            "job_id": str(result.inserted_id),
+            "job_id": str(insert_result.inserted_id),
         }
     ), 200
 

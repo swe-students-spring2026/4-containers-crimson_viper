@@ -18,6 +18,7 @@ from services.entry_service import (
     get_entry_by_date,
     update_entry,
 )
+
 from models.db import db
 
 page_bp = Blueprint("pages", __name__)
@@ -160,7 +161,12 @@ def today():
     normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
 
     audio_jobs = list(
-        db.audio_jobs.find({"username": username}).sort("created_at", -1)
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": normalized_date,
+            }
+        ).sort("created_at", -1)
     )
 
     return render_template(
@@ -182,7 +188,12 @@ def day(date):
     normalized_date, entry, prev_date, next_date = _day_context(username, date)
 
     audio_jobs = list(
-        db.audio_jobs.find({"username": username}).sort("created_at", -1)
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": normalized_date,
+            }
+        ).sort("created_at", -1)
     )
 
     return render_template(
@@ -404,10 +415,3 @@ def delete_task_page(date, task_index):
     return redirect(
         url_for("pages.today", username=username, date=entry_date) + "#tasks"
     )
-
-@page_bp.route("/record-audio")
-@login_required
-def record_audio_page():
-    """Redirects to the day page for audio recording."""
-    selected_date = request.args.get("date") or str(dt_date.today())
-    return redirect(url_for("pages.today", date=selected_date))
