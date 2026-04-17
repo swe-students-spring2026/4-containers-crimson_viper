@@ -74,11 +74,7 @@ def main():
             entries_collection.update_one(
                 {"username": username, "date": date},
                 {
-                    "$setOnInsert": {
-                        "username": username,
-                        "date": date,
-                        "tasks": []
-                    },
+                    "$setOnInsert": {"username": username, "date": date, "tasks": []},
                     "$push": {
                         "journal_entries": {
                             "transcript": text,
@@ -89,7 +85,7 @@ def main():
                         }
                     },
                 },
-                upsert=True
+                upsert=True,
             )
 
             print("updated database")
