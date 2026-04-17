@@ -141,27 +141,38 @@ def day():
     """
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
-    mode = request.args.get("mode", "prompt")
-    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
-    existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
+    normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
 
-    selected_prompt = request.args.get("prompt")
+    audio_jobs = list(
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": normalized_date,
+            }
+        ).sort("created_at", -1)
+    )
 
-    if mode == "continue" and existing_entry and not selected_prompt:
-        current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
-        transcript_value = existing_entry.get("transcript", "")
-        mood_score = existing_entry.get("mood_score", "")
-        stress_score = existing_entry.get("stress_score", "")
-    else:
-        current_prompt = selected_prompt or PROMPTS[0]
-        transcript_value = ""
-        mood_score = 5
-        stress_score = ""
-        existing_entry = None
-        existing_entry_index = None
+    is_today = normalized_date == dt_date.today().isoformat()
 
-    prompt_choices = _build_prompt_choices(current_prompt)
-    
+    return render_template(
+        "day.html",
+        date=normalized_date,
+        entry=entry,
+        username=username,
+        prev_date=prev_date,
+        next_date=next_date,
+        audio_jobs=audio_jobs,
+        is_today=is_today,
+    )
+
+
+@page_bp.route("/day/<date>")
+@login_required
+def day(date):
+    """Renders the day view for a specific date."""
+    username = current_user.username
+    normalized_date, entry, prev_date, next_date = _day_context(username, date)
+
     audio_jobs = list(
         db.audio_jobs.find(
             {
@@ -190,6 +201,7 @@ def day():
         mood_score=mood_score,
         stress_score=stress_score,
         audio_jobs=audio_jobs,
+        is_today=is_today,
     )
 
 @page_bp.route("/reflect")
@@ -226,6 +238,10 @@ def reflect():
         "reflect.html",
         username=username,
         date=selected_date,
+        prev_date=prev_date,
+        next_date=next_date,
+        is_today=is_today,
+        entry=day_doc,
         mode=mode,
         prompts=prompt_choices,
         current_prompt=current_prompt,
@@ -324,6 +340,7 @@ def delete_entry_page(date, entry_index):
     Deletes an entry page
     """
     username = current_user.username
+    next_page = request.form.get("next_page", "day")
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
     return redirect(url_for("pages.reflect", username=username, date=entry_date))
@@ -404,8 +421,14 @@ def delete_task_page(date, task_index):
     Deletes a task page
     """
     username = current_user.username
+    next_page = request.form.get("next_page", "day")
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
+
+    if next_page == "reflect":
+        return redirect(
+            url_for("pages.reflect", username=username, date=entry_date, mode="prompt")
+        )
     return redirect(
         url_for("pages.reflect", username=username, date = entry_date) + "#tasks"
     )

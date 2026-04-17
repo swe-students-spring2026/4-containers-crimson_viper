@@ -1,8 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}History{% endblock %}
+{% block title %}History{% endblock %}
 
 {% block content %}
+{% set day_doc = entry if entry else {} %}
+{% set journal_entries = day_doc.journal_entries if day_doc and day_doc.journal_entries else [] %}
+{% set task_list = day_doc.tasks if day_doc and day_doc.tasks else [] %}
+{% set is_today = is_today if is_today is defined else false %}
 {% set day_doc = entry if entry else {} %}
 {% set journal_entries = day_doc.journal_entries if day_doc and day_doc.journal_entries else [] %}
 {% set task_list = day_doc.tasks if day_doc and day_doc.tasks else [] %}
@@ -10,6 +15,16 @@
 
 <div class="screen">
     <header class="hero">
+        <div class="day-switcher">
+            <a href="{{ url_for('pages.reflect', username=username, date=prev_date, mode='prompt') }}" class="day-arrow">‹</a>
+            <div class="day-heading">
+                <p class="day-label">History View</p>
+                <h1>{{ date }}</h1>
+            </div>
+            {% if not is_today %}
+            <a href="{{ url_for('pages.reflect', username=username, date=next_date, mode='prompt') }}" class="day-arrow">›</a>
+            {% endif %}
+        </div>
         <div class="day-switcher">
             <a href="{{ url_for('pages.reflect', username=username, date=prev_date, mode='prompt') }}" class="day-arrow">‹</a>
             <div class="day-heading">
