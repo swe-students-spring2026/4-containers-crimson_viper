@@ -2,15 +2,15 @@
 {% block content %}
 
 <div class="screen">
-  {% if error %}
-    <p class="error-text">{{ error }}</p>
-  {% endif %}
 
   <header class="hero">
     <h1>Login</h1>
   </header>
 
   <form class="form" method="post">
+    {% if error %}
+      <div class="error-text">{{ error }}</div>
+    {% endif %}
     <input class="field" name="email" type="email" placeholder="Email Address" required />
     <input class="field" name="password" type="password" placeholder="Password" required />
 
