@@ -6,7 +6,7 @@ from datetime import datetime
 import os
 import uuid
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, redirect, url_for
 from flask_login import login_required, current_user
 
 from models.db import db
@@ -38,6 +38,20 @@ def upload_audio():
             "emotion": None,
         }
     )
+    return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
 
-    # we need to have a return statement for it to work
-    return jsonify({"message": "Audio uploaded successfully"}), 200
+@audio_bp.route("/upload-text", methods=["POST"])
+@login_required
+def upload_text():
+    """Uploads the text to database"""
+    db.audio_jobs.insert_one(
+        {
+            "username": request.form.get("username"),
+            "created_at": datetime.utcnow(),
+            "audio_path": None,
+            "status": "unprocessed",
+            "transcription": request.form.get("transcript"),
+            "emotion": None,
+        }
+    )
+    return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))

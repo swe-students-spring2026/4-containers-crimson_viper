@@ -37,16 +37,15 @@
                 </div>
             </form>
         </section>
-
+        
         <section class="content-card">
             <form method="POST"
-                action="{% if has_existing_entry %}{{ url_for('pages.update_entry_page', date=date, entry_index=entry_index) }}{% else %}{{ url_for('pages.create_entry_page') }}{% endif %}"
+                action="{{ url_for('audio.upload_text') }}"
                 class="entry-form">
                 <input type="hidden" name="username" value="{{ username }}">
                 <input type="hidden" name="date" value="{{ date }}">
                 <input type="hidden" name="entry_type" value="prompt">
                 <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
-
                 <label class="form-label">Text Entry</label>
                 <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
                 <button type="submit" class="primary-button">Save</button>

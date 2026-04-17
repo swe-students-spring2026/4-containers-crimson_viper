@@ -47,10 +47,14 @@ def main():
             print("found an unprocessed audio file")
             path = job["audio_path"]
 
-            result = model.transcribe(path, language="en")
-            print("transcribed audio file")
+            if path:
+                result = model.transcribe(path, language="en")
+                print("transcribed audio file")
+                text = result["text"]
+            else:
+                text = job.get("transcript", "")
+                result = {"text": text}
 
-            text = result["text"]
             if text and text.strip():
                 emotion_result = emotion_analyzer(text, truncation=True)
                 emotion_label = emotion_result[0]["label"].lower()
