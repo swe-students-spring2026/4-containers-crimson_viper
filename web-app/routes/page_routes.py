@@ -150,6 +150,8 @@ def today():
         ).sort("created_at", -1)
     )
 
+    is_today = normalized_date == dt_date.today().isoformat()
+
     return render_template(
         "day.html",
         date=normalized_date,
@@ -158,6 +160,7 @@ def today():
         prev_date=prev_date,
         next_date=next_date,
         audio_jobs=audio_jobs,
+        is_today=is_today,
     )
 
 
@@ -177,6 +180,8 @@ def day(date):
         ).sort("created_at", -1)
     )
 
+    is_today = normalized_date == dt_date.today().isoformat()
+
     return render_template(
         "day.html",
         date=normalized_date,
@@ -185,6 +190,7 @@ def day(date):
         prev_date=prev_date,
         next_date=next_date,
         audio_jobs=audio_jobs,
+        is_today=is_today,
     )
 
 
@@ -197,7 +203,7 @@ def reflect():
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     mode = request.args.get("mode", "prompt")
-    selected_date, day_doc, _, _ = _day_context(username, selected_date)
+    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
     existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
 
     selected_prompt = request.args.get("prompt")
@@ -217,10 +223,16 @@ def reflect():
 
     prompt_choices = _build_prompt_choices(current_prompt)
 
+    is_today = selected_date == dt_date.today().isoformat()
+
     return render_template(
         "reflect.html",
         username=username,
         date=selected_date,
+        prev_date=prev_date,
+        next_date=next_date,
+        is_today=is_today,
+        entry=day_doc,
         mode=mode,
         prompts=prompt_choices,
         current_prompt=current_prompt,
@@ -275,8 +287,6 @@ def create_entry_page():
 
     create_entry(username, entry_date, entry_data)
 
-    if entry_data["entry_type"] == "prompt":
-        return redirect(url_for("pages.today", username=username, date=entry_date))
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
@@ -303,8 +313,6 @@ def update_entry_page(date, entry_index):
 
     update_entry(username, entry_date, entry_index, updated_data)
 
-    if updated_data["entry_type"] == "prompt":
-        return redirect(url_for("pages.today", username=username, date=entry_date))
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
@@ -315,8 +323,14 @@ def delete_entry_page(date, entry_index):
     Deletes an entry page
     """
     username = current_user.username
+    next_page = request.form.get("next_page", "day")
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
+
+    if next_page == "reflect":
+        return redirect(
+            url_for("pages.reflect", username=username, date=entry_date, mode="prompt")
+        )
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
@@ -395,8 +409,14 @@ def delete_task_page(date, task_index):
     Deletes a task page
     """
     username = current_user.username
+    next_page = request.form.get("next_page", "day")
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
+
+    if next_page == "reflect":
+        return redirect(
+            url_for("pages.reflect", username=username, date=entry_date, mode="prompt")
+        )
     return redirect(
         url_for("pages.today", username=username, date=entry_date) + "#tasks"
     )
