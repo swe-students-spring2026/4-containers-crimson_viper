@@ -36,6 +36,9 @@ def upload_audio():
             "status": "unprocessed",
             "transcription": None,
             "emotion": None,
+            "date": request.form.get("date"),  # Add this
+            "entry_type": request.form.get("entry_type"),  # Add this
+            "prompt_text": request.form.get("prompt_text"),  # Add this
         }
     )
     return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
@@ -52,6 +55,9 @@ def upload_text():
             "status": "unprocessed",
             "transcription": request.form.get("transcript"),
             "emotion": None,
+            "date": request.form.get("date"),  # Add this
+            "entry_type": request.form.get("entry_type"),  # Add this
+            "prompt_text": request.form.get("prompt_text"),  # Add this
         }
     )
     return redirect(url_for('pages.reflect', username=request.form.get('username'), date=request.form.get('date')))
