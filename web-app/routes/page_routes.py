@@ -287,8 +287,6 @@ def create_entry_page():
 
     create_entry(username, entry_date, entry_data)
 
-    if entry_data["entry_type"] == "prompt":
-        return redirect(url_for("pages.today", username=username, date=entry_date))
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
@@ -315,8 +313,6 @@ def update_entry_page(date, entry_index):
 
     update_entry(username, entry_date, entry_index, updated_data)
 
-    if updated_data["entry_type"] == "prompt":
-        return redirect(url_for("pages.today", username=username, date=entry_date))
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
@@ -332,7 +328,9 @@ def delete_entry_page(date, entry_index):
     delete_entry(username, entry_date, entry_index)
 
     if next_page == "reflect":
-        return redirect(url_for("pages.reflect", username=username, date=entry_date, mode="prompt"))
+        return redirect(
+            url_for("pages.reflect", username=username, date=entry_date, mode="prompt")
+        )
     return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
@@ -416,5 +414,9 @@ def delete_task_page(date, task_index):
     delete_task(username, entry_date, task_index)
 
     if next_page == "reflect":
-        return redirect(url_for("pages.reflect", username=username, date=entry_date, mode="prompt"))
-    return redirect(url_for("pages.today", username=username, date=entry_date) + "#tasks")
+        return redirect(
+            url_for("pages.reflect", username=username, date=entry_date, mode="prompt")
+        )
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
