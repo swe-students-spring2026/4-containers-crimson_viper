@@ -52,7 +52,7 @@ def main():
                 print("transcribed audio file")
                 text = result["text"]
             else:
-                text = job.get("transcript", "")
+                text = job.get("transcription", "")
                 result = {"text": text}
 
             if text and text.strip():
@@ -68,7 +68,7 @@ def main():
                 # only update the text and status fields
                 {
                     "$set": {
-                        "transcription": result["text"],
+                        "transcription": text,
                         "emotion": emotion_label,
                         "status": "processed",
                     }
