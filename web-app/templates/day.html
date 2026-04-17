@@ -23,7 +23,7 @@
     <main class="main-content">
         <section class="content-card">
             <div class="section-header">
-                <h3 class="section-title">TODAY’S TASKS</h3>
+                <h3 class="section-title">TODAY'S TASKS</h3>
             </div>
 
             {% if task_list %}
@@ -67,13 +67,13 @@
 
                 <textarea id="journal-textarea" name="transcript" placeholder="Write your Journal Entry"></textarea>
 
-                <div class="voice-bar">
+                <button id="mic-btn" class="voice-bar" type="button">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
                         <rect x="9" y="2" width="6" height="12" rx="3"></rect>
                         <path d="M5 10a7 7 0 0 0 14 0"></path>
                         <line x1="12" y1="17" x2="12" y2="22"></line>
                     </svg>
-                </div>
+                </button>
 
                 <button type="submit" class="primary-button">Save</button>
             </form>
@@ -83,8 +83,6 @@
             <div class="section-header">
                 <h3 class="section-title">AUDIO RECORDINGS</h3>
             </div>
-
-            <a href="{{ url_for('pages.record_audio_page', date=date) }}" class="primary-button">Record Audio</a>
 
             {% if daily_audio %}
                 <div class="journal-list">
@@ -147,33 +145,82 @@
         </section>
     </main>
 
-    {% if audio_jobs %}
-    <section class="content-card">
-        <div class="section-header">
-            <h3 class="section-title">AUDIO ANALYSIS</h3>
-        </div>
-
-        <div class="journal-list">
-            {% for audio in audio_jobs %}
-            <div class="journal-card">
-                <div class="journal-card-top">
-                    <span class="journal-index">Recording {{ loop.index }}</span>
-                    <span class="entry-meta">{{ audio.status }}</span>
-                </div>
-
-                <p class="journal-summary"><strong>Emotion:</strong> {{ audio.emotion or "Not available yet" }}</p>
-                <p class="journal-summary"><strong>Transcript:</strong> {{ audio.transcription or "Still processing..." }}</p>
-                <p class="entry-meta"><strong>Created:</strong> {{ audio.created_at }}</p>
-            </div>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
-
     <nav class="bottom-nav">
         <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
         <a href="{{ url_for('pages.today', username=username, date=date) }}" class="nav-item active">Day</a>
         <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">Reflect</a>
     </nav>
 </div>
+
+<script>
+  let mediaRecorder = null;
+  let chunks = [];
+  let isRecording = false;
+
+  const micBtn = document.getElementById("mic-btn");
+  const textarea = document.getElementById("journal-textarea");
+
+  async function pollTranscript(jobId) {
+    for (let i = 0; i < 30; i++) {
+      const response = await fetch(`/audio-status/${jobId}`);
+      const data = await response.json();
+
+      if (data.status === "processed") {
+        textarea.value = data.transcription || "";
+        return;
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+
+    alert("Audio uploaded, but transcription is still processing.");
+  }
+
+  micBtn.onclick = async () => {
+    if (!isRecording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        mediaRecorder = new MediaRecorder(stream);
+        chunks = [];
+
+        mediaRecorder.ondataavailable = (e) => {
+          chunks.push(e.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(chunks, { type: "audio/wav" });
+
+          const formData = new FormData();
+          formData.append("date", "{{ date }}");
+          formData.append("audio", audioBlob, "recording.wav");
+
+          const response = await fetch("/upload-audio", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            alert("Failed to upload audio.");
+            return;
+          }
+
+          const data = await response.json();
+          await pollTranscript(data.job_id);
+        };
+
+        mediaRecorder.start();
+        isRecording = true;
+        micBtn.classList.add("recording");
+      } catch (error) {
+        console.error(error);
+        alert("Unable to access microphone.");
+      }
+    } else {
+      mediaRecorder.stop();
+      isRecording = false;
+      micBtn.classList.remove("recording");
+    }
+  };
+</script>
 {% endblock %}

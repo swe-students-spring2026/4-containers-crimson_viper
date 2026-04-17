@@ -408,10 +408,6 @@ def delete_task_page(date, task_index):
 @page_bp.route("/record-audio")
 @login_required
 def record_audio_page():
-    """Renders the audio recording page."""
+    """Redirects to the day page for audio recording."""
     selected_date = request.args.get("date") or str(dt_date.today())
-    return render_template(
-        "record_audio.html",
-        username=current_user.username,
-        date=selected_date,
-    )
+    return redirect(url_for("pages.today", date=selected_date))

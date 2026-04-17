@@ -12,7 +12,6 @@ openai-whisper = "*"
 torch = "*"
 sounddevice = "*"
 scipy = "*"
-whisper = "*"
 black = "*"
 transformers = "*"
 
