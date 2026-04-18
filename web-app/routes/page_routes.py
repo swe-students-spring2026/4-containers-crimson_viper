@@ -3,6 +3,8 @@ Has the page routes for the app
 """
 
 from datetime import date as dt_date, datetime, timedelta
+import random
+
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 
@@ -98,7 +100,25 @@ def _build_prompt_choices(current_prompt=None):
     """
     Generates the prompt choices
     """
-    return [p for p in PROMPTS if p != current_prompt][:3]
+    pool = PROMPTS[:]
+    if len(pool) >= 3:
+        prompt_choices = random.sample(pool, 3)
+    else:
+        prompt_choices = pool
+
+    if current_prompt:
+        prompt_choices = [
+            prompt for prompt in prompt_choices if prompt != current_prompt
+        ]
+        prompt_choices.insert(0, current_prompt)
+
+    seen = []
+    deduped = []
+    for prompt in prompt_choices:
+        if prompt not in seen:
+            seen.append(prompt)
+            deduped.append(prompt)
+    return deduped[:3]
 
 
 def _day_context(username, selected_date):
@@ -135,55 +155,55 @@ def home():
 
 @page_bp.route("/day")
 @login_required
-def day():
-    """
-    Renders day.html with prompt functionality
-    """
+def today():
+    """Renders the day view for today or a selected date."""
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
-    mode = request.args.get("mode", "prompt")
-    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
-    existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
-
-    selected_prompt = request.args.get("prompt")
-
-    if mode == "continue" and existing_entry and not selected_prompt:
-        current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
-        transcript_value = existing_entry.get("transcript", "")
-    else:
-        current_prompt = selected_prompt or PROMPTS[0]
-        transcript_value = ""
-
-        existing_entry = None
-        existing_entry_index = None
-
-    prompt_choices = _build_prompt_choices(current_prompt)
+    normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
 
     audio_jobs = list(
         db.audio_jobs.find(
             {
                 "username": username,
-                "date": selected_date,
+                "date": normalized_date,
             }
         ).sort("created_at", -1)
     )
 
-    is_today = selected_date == dt_date.today().isoformat()
+    return render_template(
+        "day.html",
+        date=normalized_date,
+        entry=entry,
+        username=username,
+        prev_date=prev_date,
+        next_date=next_date,
+        audio_jobs=audio_jobs,
+    )
+
+
+@page_bp.route("/day/<date>")
+@login_required
+def day(date):
+    """Renders the day view for a specific date."""
+    username = current_user.username
+    normalized_date, entry, prev_date, next_date = _day_context(username, date)
+
+    audio_jobs = list(
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": normalized_date,
+            }
+        ).sort("created_at", -1)
+    )
 
     return render_template(
         "day.html",
+        date=normalized_date,
+        entry=entry,
         username=username,
-        date=selected_date,
         prev_date=prev_date,
         next_date=next_date,
-        is_today=is_today,
-        entry=day_doc,
-        mode=mode,
-        prompts=prompt_choices,
-        current_prompt=current_prompt,
-        existing_entry=existing_entry,
-        existing_entry_index=existing_entry_index,
-        transcript_value=transcript_value,
         audio_jobs=audio_jobs,
     )
 
@@ -197,26 +217,23 @@ def reflect():
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     mode = request.args.get("mode", "prompt")
-    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
+    selected_date, day_doc, _, _ = _day_context(username, selected_date)
     existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
 
-    selected_prompt = request.args.get("prompt")
-
-    if mode == "continue" and existing_entry and not selected_prompt:
+    if mode == "continue" and existing_entry:
         current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
         transcript_value = existing_entry.get("transcript", "")
         mood_score = existing_entry.get("mood_score", "")
         stress_score = existing_entry.get("stress_score", "")
     else:
-        current_prompt = selected_prompt or PROMPTS[0]
+        current_prompt = request.args.get("prompt") or PROMPTS[0]
         transcript_value = ""
-        mood_score = 5
+        mood_score = ""
         stress_score = ""
         existing_entry = None
         existing_entry_index = None
 
     prompt_choices = _build_prompt_choices(current_prompt)
-    is_today = selected_date == dt_date.today().isoformat()
 
     return render_template(
         "reflect.html",
@@ -230,10 +247,6 @@ def reflect():
         transcript_value=transcript_value,
         mood_score=mood_score,
         stress_score=stress_score,
-        entry=day_doc,
-        prev_date=prev_date,
-        next_date=next_date,
-        is_today=is_today,
     )
 
 
@@ -281,8 +294,8 @@ def create_entry_page():
     create_entry(username, entry_date, entry_data)
 
     if entry_data["entry_type"] == "prompt":
-        return redirect(url_for("pages.day", username=username, date=entry_date))
-    return redirect(url_for("pages.day", username=username, date=entry_date))
+        return redirect(url_for("pages.today", username=username, date=entry_date))
+    return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
 @page_bp.route("/entries/<date>/<int:entry_index>/edit", methods=["POST"])
@@ -309,8 +322,8 @@ def update_entry_page(date, entry_index):
     update_entry(username, entry_date, entry_index, updated_data)
 
     if updated_data["entry_type"] == "prompt":
-        return redirect(url_for("pages.day", username=username, date=entry_date))
-    return redirect(url_for("pages.day", username=username, date=entry_date))
+        return redirect(url_for("pages.today", username=username, date=entry_date))
+    return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
 @page_bp.route("/entries/<date>/<int:entry_index>/delete", methods=["POST"])
@@ -322,7 +335,7 @@ def delete_entry_page(date, entry_index):
     username = current_user.username
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
-    return redirect(url_for("pages.reflect", username=username, date=entry_date))
+    return redirect(url_for("pages.today", username=username, date=entry_date))
 
 
 @page_bp.route("/tasks/new", methods=["POST"])
@@ -334,18 +347,18 @@ def create_task_page():
     username = current_user.username
     entry_date = _parse_date(request.form["date"]).isoformat()
     title = request.form.get("title", "").strip()
-    deadline = request.form.get("deadline")
-    if deadline:
-        deadline_value = deadline.strip()
-    else:
-        deadline_value = None
     if title:
         add_task(
             username,
             entry_date,
-            {"title": title, "completed": False, "deadline": deadline_value},
+            {
+                "title": title,
+                "completed": False,
+            },
         )
-    return redirect(url_for("pages.day", username=username) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/edit", methods=["POST"])
@@ -363,7 +376,9 @@ def update_task_page(date, task_index):
         "completed": completed,
     }
     edit_task(username, entry_date, task_index, updated_task)
-    return redirect(url_for("pages.day", username=username) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/toggle", methods=["POST"])
@@ -384,7 +399,9 @@ def toggle_task_page(date, task_index):
             "completed": not task.get("completed", False),
         }
         edit_task(username, entry_date, task_index, updated_task)
-    return redirect(url_for("pages.day", username=username) + "#tasks")
+    return redirect(
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+    )
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/delete", methods=["POST"])
@@ -397,5 +414,5 @@ def delete_task_page(date, task_index):
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
     return redirect(
-        url_for("pages.reflect", username=username, date=entry_date) + "#tasks"
+        url_for("pages.today", username=username, date=entry_date) + "#tasks"
     )
