@@ -12,7 +12,22 @@ This repository is organized as a monorepo. The `web-app` directory contains the
 
 ## Team Members
 
-## Project Structure
+- [Chase](https://github.com/chasecvitale)
+- [Ethan](https://github.com/ethantyr)
+- [Laiyi](https://github.com/laiEEEEEEE)
+- [Lan](https://github.com/lpn4939-web)
+- [Kara](https://github.com/cynikjinchen)
+
+## Main Features
+
+- User account creation
+- User login
+- Journal page interface
+- Audio recording or audio upload
+- Audio transcription
+- Emotion analysis
+- MongoDB-backed storage
+- Multi-container deployment using Docker Compose
 
 ## How to Configure and Run the Project
 
