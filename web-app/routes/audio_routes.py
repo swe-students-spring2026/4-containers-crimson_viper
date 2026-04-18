@@ -31,7 +31,7 @@ def upload_audio():
 
     selected_date = request.form.get("date")
 
-    db.audio_jobs.insert_one(
+    result = db.audio_jobs.insert_one(
         {
             "username": current_user.username,
             "date": selected_date,
@@ -44,19 +44,20 @@ def upload_audio():
             "prompt_text": request.form.get("prompt_text"),
         }
     )
-    return redirect(
-        url_for(
-            "pages.day",
-            username=request.form.get("username"),
-        )
-    )
+    # lets us have the popup for result
+    job_id = str(result.inserted_id)
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "redirect_url": url_for("pages.day", username=request.form.get("username"))
+    })
 
 
 @audio_bp.route("/upload-text", methods=["POST"])
 @login_required
 def upload_text():
     """Uploads the text to database"""
-    db.audio_jobs.insert_one(
+    result = db.audio_jobs.insert_one(
         {
             "username": request.form.get("username"),
             "created_at": datetime.utcnow(),
@@ -69,12 +70,13 @@ def upload_text():
             "prompt_text": request.form.get("prompt_text"),
         }
     )
-    return redirect(
-        url_for(
-            "pages.day",
-            username=request.form.get("username"),
-        )
-    )
+
+    job_id = str(result.inserted_id)
+    return jsonify({
+        "success": True,
+        "job_id": job_id,
+        "redirect_url": url_for("pages.day", username=request.form.get("username"))
+    })
 
 
 @audio_bp.route("/audio-status/<job_id>", methods=["GET"])
