@@ -47,9 +47,7 @@
         </section>
         
         <section class="content-card">
-            <form method="POST"
-                action="{{ url_for('audio.upload_text') }}"
-                class="entry-form">
+            <form id = "textEntryForm" class = "entry-form">
                 <input type="hidden" name="username" value="{{ username }}">
                 <input type="hidden" name="date" value="{{ date }}">
                 <input type="hidden" name="entry_type" value="prompt">
@@ -110,9 +108,15 @@ voiceBar.onclick = async () => {
             formData.append("entry_type", "prompt");
             formData.append("prompt_text", "{{ current_prompt }}");
             
-            await fetch("/upload-audio", { method: "POST", body: formData });
-            
+            const response = await fetch("/upload-audio", { method: "POST", body: formData });
+            const result = await response.json();
             audioStream.getTracks().forEach(track => track.stop());
+
+            if (result.success && result.job_id) {
+                startPolling(result.job_id);
+                alert('Audio submitted! Processing...');
+            }
+            
             audioStream = null;
             voiceBar.style.backgroundColor = "";
             voiceBar.querySelector("svg").style.stroke = "black";
@@ -128,6 +132,32 @@ voiceBar.onclick = async () => {
         isRecording = false;
     }
 };
+
+// text entry popup
+const textForm = document.getElementById('textEntryForm');
+textForm.addEventListener('submit', async (e) => {
+    // stops page from refreshing (to get the notification)
+    e.preventDefault();
+    const formData = new FormData(textForm);
+    const response = await fetch("/upload-text", { method: "POST", body: formData });
+    const result = await response.json();
+    startPolling(result.job_id);
+    alert('Text submitted! Processing...');
+});
+
+// audio entry popup
+let pollInterval;
+
+function startPolling(jobId) {
+    pollInterval = setInterval(async () => {
+        const res = await fetch(`/audio-status/${jobId}`);
+        const data = await res.json();
+        if (data.status === 'processed') {
+            clearInterval(pollInterval);
+            alert('Journal entry processed.');
+        }
+    }, 2000);
+}
 </script>
 
 {% endblock %}
