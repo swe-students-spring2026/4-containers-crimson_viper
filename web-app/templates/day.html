@@ -16,6 +16,11 @@
         <section class="prompt-card">
             <h3>PROMPT</h3>
             <p>{{ current_prompt }}</p>
+
+            <a class="secondary-link"
+                href="{{ url_for('pages.day', username=username, date=date, mode='prompt') }}">
+                Change Prompt
+            </a>
         </section>
 
         <section class="content-card">
@@ -54,20 +59,6 @@
                 <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
                 <button type="submit" class="primary-button">Save</button>
             </form>
-        </section>
-
-        <section class="content-card">
-            <div class="section-header">
-                <h3 class="section-title">MORE PROMPTS</h3>
-            </div>
-            <div class="reflect-actions">
-                {% for prompt in prompts %}
-                <a class="secondary-link"
-                    href="{{ url_for('pages.day', username=username, date=date, mode='prompt', prompt=prompt) }}">
-                    {{ prompt }}
-                </a>
-                {% endfor %}
-            </div>
         </section>
 
         <section class="content-card">
