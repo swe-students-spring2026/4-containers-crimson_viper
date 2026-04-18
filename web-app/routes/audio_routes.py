@@ -46,11 +46,13 @@ def upload_audio():
     )
     # lets us have the popup for result
     job_id = str(result.inserted_id)
-    return jsonify({
-        "success": True,
-        "job_id": job_id,
-        "redirect_url": url_for("pages.day", username=request.form.get("username"))
-    })
+    return jsonify(
+        {
+            "success": True,
+            "job_id": job_id,
+            "redirect_url": url_for("pages.day", username=request.form.get("username")),
+        }
+    )
 
 
 @audio_bp.route("/upload-text", methods=["POST"])
@@ -72,11 +74,13 @@ def upload_text():
     )
 
     job_id = str(result.inserted_id)
-    return jsonify({
-        "success": True,
-        "job_id": job_id,
-        "redirect_url": url_for("pages.day", username=request.form.get("username"))
-    })
+    return jsonify(
+        {
+            "success": True,
+            "job_id": job_id,
+            "redirect_url": url_for("pages.day", username=request.form.get("username")),
+        }
+    )
 
 
 @audio_bp.route("/audio-status/<job_id>", methods=["GET"])
