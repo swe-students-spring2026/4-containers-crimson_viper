@@ -3,9 +3,9 @@ Has the page routes for the app
 """
 
 from datetime import date as dt_date, datetime, timedelta
+import random
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
-import random
 
 from services.entry_service import (
     add_task,
