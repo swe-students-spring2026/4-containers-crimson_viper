@@ -14,7 +14,7 @@
 
     <main class="main-content">
         <section class="prompt-card">
-            <h3>Prompt</h3>
+            <h3>PROMPT</h3>
             <p>{{ current_prompt }}</p>
         </section>
 
@@ -27,7 +27,9 @@
                 <input type="hidden" name="entry_type" value="prompt">
                 <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
 
-                <label class="form-label">Audio Entry</label>
+                <div class="section-header">
+                    <h3 class="section-title">AUDIO ENTRY</h3>
+                </div>
                 <div class="voice-bar" id="voiceBar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2">
                         <rect x="9" y="2" width="6" height="12" rx="3"></rect>
@@ -46,7 +48,9 @@
                 <input type="hidden" name="date" value="{{ date }}">
                 <input type="hidden" name="entry_type" value="prompt">
                 <input type="hidden" name="prompt_text" value="{{ current_prompt }}">
-                <label class="form-label">Text Entry</label>
+                <div class="section-header">
+                    <h3 class="section-title">TEXT ENTRY</h3>
+                </div>
                 <textarea name="transcript" placeholder="Write here...">{{ transcript_value|default('') }}</textarea>
                 <button type="submit" class="primary-button">Save</button>
             </form>
@@ -54,17 +58,31 @@
 
         <section class="content-card">
             <div class="section-header">
-                <h3 class="section-title">More prompts</h3>
+                <h3 class="section-title">MORE PROMPTS</h3>
             </div>
             <div class="reflect-actions">
                 {% for prompt in prompts %}
                 <a class="secondary-link"
-                    href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt', prompt=prompt) }}">
+                    href="{{ url_for('pages.day', username=username, date=date, mode='prompt', prompt=prompt) }}">
                     {{ prompt }}
                 </a>
                 {% endfor %}
             </div>
         </section>
+
+        <section class="content-card">
+            <div class="section-header">
+                <h3 class="section-title">ADD A GOAL</h3>
+            </div>
+            <form method="POST" action="{{ url_for('pages.create_task_page') }}" class="entry-form inline-form">
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="date" value="{{ date }}">
+                <input name="title" placeholder="+ Add Item" required>
+                <input name="deadline" type="time">
+                <button type="submit" class="primary-button">Add Task</button>
+            </form>
+        </section>
+
     </main>
 
     <nav class="bottom-nav">
