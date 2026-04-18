@@ -3,6 +3,7 @@ Has the page routes for the app
 """
 
 from datetime import date as dt_date, datetime, timedelta
+import random
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 
@@ -145,7 +146,7 @@ def day():
     selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
     existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
 
-    selected_prompt = request.args.get("prompt")
+    selected_prompt = random.choice(PROMPTS)
 
     if mode == "continue" and existing_entry and not selected_prompt:
         current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
