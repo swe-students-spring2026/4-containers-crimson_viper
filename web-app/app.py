@@ -1,20 +1,18 @@
-"""
-This is the main file for the Flask application.
-"""
+"""Flask application for audio journal management and authentication."""
 
 import os
-from flask import Flask, render_template, request, redirect, url_for
 
-# for the login
+from bson.errors import InvalidId
+from bson.objectid import ObjectId
+from flask import Flask, redirect, render_template, request, url_for
 from flask_login import (
     LoginManager,
     UserMixin,
-    login_user,
-    logout_user,
-    login_required,
     current_user,
+    login_user,
+    login_required,
+    logout_user,
 )
-from bson.objectid import ObjectId
 
 from routes.entry_routes import entry_bp
 from routes.page_routes import page_bp
@@ -40,9 +38,10 @@ login_manager.login_view = "login"
 
 
 class User(UserMixin):
-    """User class for Flask-Login."""
+    """User model used by Flask-Login to track authenticated sessions."""
 
     def __init__(self, user_data):
+        """Populate the session-facing user fields from a database document."""
         self.id = str(user_data["_id"])
         self.email = user_data["email"]
         self.username = user_data["username"]
@@ -50,33 +49,28 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    """Load user from the database."""
-    # session stores user's _id; load user by _id
+    """Load a user document by id from the session cookie."""
     try:
         oid = ObjectId(user_id) if isinstance(user_id, str) else user_id
         user = db.users.find_one({"_id": oid})
         if user:
             return User(user)
-    except (TypeError, ValueError) as e:
-        print(f"Error loading user: {e}")
+    except (InvalidId, TypeError):
+        return None
     return None
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    """Login route for the application."""
-
+    """Authenticate a user with an email address and password."""
     if request.method == "POST":
-        # emails arent case senstitive
+        # Normalize email input because email addresses are case-insensitive.
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
 
-        # check the database
         user = db.users.find_one({"email": email})
         if user and user["password"] == password:
             login_user(User(user))
-
-            # return redirect(url_for("pages.home", username=user["username"]))
             return redirect(url_for("pages.home"))
 
         return render_template("login.html", error="Invalid email or password.")
@@ -86,23 +80,19 @@ def login():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
-    """Signup route for the application."""
-
+    """Create a new user account when the submitted form is valid."""
     if request.method == "POST":
-        # email not case sensititve
+        # Normalize email input because email addresses are case-insensitive.
         email = request.form.get("email", "").strip().lower()
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
 
-        # make sure that the user fills out everything
         if not email or not username or not password:
             return render_template("signup.html", error="All fields are required.")
 
-        # cannot reuse an email
         if db.users.find_one({"email": email}):
             return render_template("signup.html", error="Email already taken.")
 
-        # cannot reuse usernmae
         if db.users.find_one({"username": username}):
             return render_template("signup.html", error="Username already taken.")
 
@@ -121,14 +111,14 @@ def signup():
 @app.route("/logout")
 @login_required
 def logout():
-    """Logout route for the application."""
+    """Log out the current user and return them to the login page."""
     logout_user()
     return redirect(url_for("login"))
 
 
 @app.route("/")
 def index():
-    """Index route for the application."""
+    """Redirect authenticated users home and guests to the login page."""
     if current_user.is_authenticated:
         return redirect(url_for("pages.home", username=current_user.username))
     return redirect(url_for("login"))

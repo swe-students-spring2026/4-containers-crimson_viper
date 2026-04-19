@@ -27,7 +27,14 @@ jobs:
         # you may set pylint to ignore any files or dependencies that make no sense to lint
         run: |
           cd ${{ matrix.subdir }}
-          pipenv run pylint **/*.py
+          mapfile -d '' py_files < <(
+            find . -name '*.py' \
+              -not -path './.venv/*' \
+              -not -path './__pycache__/*' \
+              -not -path './.pytest_cache/*' \
+              -print0
+          )
+          pipenv run pylint "${py_files[@]}"
       - name: Format with black
         if: ${{ hashFiles(format('{0}/**/*.py', matrix.subdir)) != '' }}
         # you may set black to ignore any files or dependencies that make no sense to format
