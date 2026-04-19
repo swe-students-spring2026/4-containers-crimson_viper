@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         # repeat same job for each subsystem in the following subdirectories
-        subdir: [web-app, machine-learning-client]
+        subdir: [web-app, machine-learning-client, build-test]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -27,14 +27,7 @@ jobs:
         # you may set pylint to ignore any files or dependencies that make no sense to lint
         run: |
           cd ${{ matrix.subdir }}
-          mapfile -d '' py_files < <(
-            find . -name '*.py' \
-              -not -path './.venv/*' \
-              -not -path './__pycache__/*' \
-              -not -path './.pytest_cache/*' \
-              -print0
-          )
-          pipenv run pylint "${py_files[@]}"
+          pipenv run pylint **/*.py
       - name: Format with black
         if: ${{ hashFiles(format('{0}/**/*.py', matrix.subdir)) != '' }}
         # you may set black to ignore any files or dependencies that make no sense to format
