@@ -9,7 +9,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 
-class FakeAudioCollection:
+class FakeAudioCollection:  # pylint: disable=too-few-public-methods
     """Minimal audio collection fake used by the tests."""
 
     def __init__(self, job):
@@ -33,7 +33,7 @@ class FakeAudioCollection:
         )
 
 
-class FakeEntriesCollection: 
+class FakeEntriesCollection:  # pylint: disable=too-few-public-methods
     """Minimal entries collection fake used by the tests."""
 
     def __init__(self):
@@ -50,7 +50,7 @@ class FakeEntriesCollection:
         )
 
 
-class FakeModel:
+class FakeModel:  # pylint: disable=too-few-public-methods
     """Simple Whisper stand-in that returns a predefined transcript."""
 
     def __init__(self, result_text="default transcript"):
@@ -79,7 +79,7 @@ def load_main_with_fakes(fake_model=None, fake_emotion_output=None):
         fake_emotion_output
     )
 
-    class FakeMongoClient:
+    class FakeMongoClient:  # pylint: disable=too-few-public-methods
         """Minimal Mongo client fake for import-time wiring."""
 
         def __init__(self, uri):
