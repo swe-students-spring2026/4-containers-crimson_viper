@@ -1,7 +1,6 @@
 """Has the page routes for the app."""
 
 from datetime import date as dt_date, datetime, timedelta
-
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 

@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <title>Home</title>
-</head>
-<body>
-    {% extends "base.html" %}
-
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
 {% block content %}
 <div class="screen">
 
@@ -38,7 +29,7 @@
         <section class="prompt-card">
             <h3>Why journal?</h3>
             <p>Journaling helps boost productivity through daily-small step goal setting</p>
-            <a href="{{ url_for('pages.day', username=username) }}" class="prompt-link">Start now →</a>
+            <a href="{{ url_for('pages.day', date=date) }}" class="prompt-link">Start now →</a>
         </section>
 
         <hr class="divider">
@@ -110,14 +101,12 @@
             </div>
         </section>
         <nav class="bottom-nav">
-            <a href="{{ url_for('pages.home', username=username) }}" class="nav-item active">Home</a>
-            <a href="{{ url_for('pages.day', username=username) }}" class="nav-item">Today</a>
-            <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}"class="nav-item">History</a>
+            <a href="{{ url_for('pages.home') }}" class="nav-item active">Home</a>
+            <a href="{{ url_for('pages.today', date=date) }}" class="nav-item">Today</a>
+            <a href="{{ url_for('pages.history', date=date) }}" class="nav-item">History</a>
         </nav>
     </main>
 
 
 </div>
 {% endblock %}
-</body>
-</html>
