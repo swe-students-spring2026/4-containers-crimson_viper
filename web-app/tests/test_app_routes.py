@@ -7,11 +7,14 @@ import app as app_module
 
 
 class FakeUsersCollection:
+    """fake users collection that mimics pymongo collection for testing app routes"""
+
     def __init__(self):
         self.users = []
         self.inserted_docs = []
 
     def find_one(self, query):
+        """return the first user that matches the query"""
         for user in self.users:
             matched = True
             for key, value in query.items():
@@ -23,6 +26,7 @@ class FakeUsersCollection:
         return None
 
     def insert_one(self, doc):
+        """insert a new user document and return the inserted id"""
         new_doc = dict(doc)
         if "_id" not in new_doc:
             new_doc["_id"] = ObjectId()
@@ -32,11 +36,15 @@ class FakeUsersCollection:
 
 
 class FakeDB:
+    """fake db that mimics the structure of the real db for testing app routes"""
+
     def __init__(self, users_collection):
+        """initialize the fake db with a users collection"""
         self.users = users_collection
 
 
 def make_client_with_fake_db(fake_users):
+    """helper function to create a test client with a fake db and return the client and the old db for restoration after the test"""
     old_db = app_module.db
     app_module.db = FakeDB(fake_users)
 
@@ -46,10 +54,12 @@ def make_client_with_fake_db(fake_users):
 
 
 def restore_db(old_db):
+    """helper function to restore the original db after a test"""
     app_module.db = old_db
 
 
 def test_load_user_returns_none_for_bad_object_id():
+    """test that load_user returns None when given an invalid object id"""
     fake_users = FakeUsersCollection()
     old_db = app_module.db
     app_module.db = FakeDB(fake_users)
@@ -62,6 +72,7 @@ def test_load_user_returns_none_for_bad_object_id():
 
 
 def test_load_user_returns_user_for_valid_id():
+    """test that load_user returns a User object with the correct fields when given a valid user id"""
     fake_users = FakeUsersCollection()
     user_id = ObjectId()
     fake_users.users.append(
@@ -87,6 +98,7 @@ def test_load_user_returns_user_for_valid_id():
 
 
 def test_login_get_renders_page():
+    """test that GET /login renders the login page"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -98,6 +110,7 @@ def test_login_get_renders_page():
 
 
 def test_login_post_invalid_credentials_shows_error():
+    """test that POST /login with invalid credentials re-renders the login page with an error message"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -117,6 +130,7 @@ def test_login_post_invalid_credentials_shows_error():
 
 
 def test_login_post_success_redirects_home():
+    """test that POST /login with valid credentials redirects to the home page and does not include /login in the redirect url"""
     fake_users = FakeUsersCollection()
     fake_users.users.append(
         {
@@ -145,6 +159,7 @@ def test_login_post_success_redirects_home():
 
 
 def test_signup_get_renders_page():
+    """test that GET /signup renders the signup page"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -156,6 +171,7 @@ def test_signup_get_renders_page():
 
 
 def test_signup_missing_fields_shows_error():
+    """test that POST /signup with missing fields re-renders the signup page with an error message"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -176,6 +192,7 @@ def test_signup_missing_fields_shows_error():
 
 
 def test_signup_duplicate_email_shows_error():
+    """test that POST /signup with an email that already exists re-renders the signup page with an error message about the email being taken"""
     fake_users = FakeUsersCollection()
     fake_users.users.append(
         {
@@ -205,6 +222,7 @@ def test_signup_duplicate_email_shows_error():
 
 
 def test_signup_duplicate_username_shows_error():
+    """test that POST /signup with a username that already exists re-renders the signup page with an error message about the username being taken"""
     fake_users = FakeUsersCollection()
     fake_users.users.append(
         {
@@ -234,6 +252,7 @@ def test_signup_duplicate_username_shows_error():
 
 
 def test_signup_success_inserts_user_and_redirects_to_login():
+    """test that POST /signup with valid data inserts a new user into the database and redirects to the login page"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -258,6 +277,7 @@ def test_signup_success_inserts_user_and_redirects_to_login():
 
 
 def test_index_redirects_logged_out_user_to_login():
+    """test that GET / redirects to the login page when the user is not authenticated"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -270,6 +290,7 @@ def test_index_redirects_logged_out_user_to_login():
 
 
 def test_index_redirects_logged_in_user_to_home():
+    """test that GET / redirects to the home page when the user is authenticated and does not include /login in the redirect url"""
     fake_users = FakeUsersCollection()
     user_id = ObjectId()
     fake_users.users.append(

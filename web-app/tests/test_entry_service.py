@@ -5,7 +5,10 @@ testing entry service functions
 
 from services import entry_service
 
+
 class FakeUpdateResult:
+    """fake object that mimics pymongo update_one result"""
+
     def __init__(self, modified_count=1, upserted_id=None):
         self.modified_count = modified_count
         self.upserted_id = upserted_id
@@ -13,6 +16,7 @@ class FakeUpdateResult:
 
 class FakeCollection:
     def __init__(self):
+        """fake collection that mimics pymongo collection"""
         self.find_one_result = None
         self.find_result = []
         self.update_one_result = FakeUpdateResult()
@@ -22,20 +26,24 @@ class FakeCollection:
         self.last_update_one_kwargs = None
 
     def find_one(self, query):
+        """return configuerd fine_one result and store the query"""
         self.last_find_one_query = query
         return self.find_one_result
 
     def find(self, query):
+        """return configured find result and store the query"""
         self.last_find_query = query
         return self.find_result
 
     def update_one(self, *args, **kwargs):
+        """return configured update_one result and store the args/kwargs"""
         self.last_update_one_args = args
         self.last_update_one_kwargs = kwargs
         return self.update_one_result
 
 
 def test_create_entry_adds_entry():
+    """test that create_entry adds an entry to the correct day document"""
     fake_collection = FakeCollection()
     entry_service.entries_collection = fake_collection
 
@@ -60,6 +68,7 @@ def test_create_entry_adds_entry():
 
 
 def test_get_all_entries_returns_find_result():
+    """test that get_all_entries returns the result of find with the correct query"""
     fake_collection = FakeCollection()
     entry_service.entries_collection = fake_collection
 
@@ -75,6 +84,7 @@ def test_get_all_entries_returns_find_result():
 
 
 def test_get_entry_by_date_returns_day_document():
+    """test that get_entry_by_date returns the correct day document with journal entries sorted by created_at"""
     fake_collection = FakeCollection()
     entry_service.entries_collection = fake_collection
 
@@ -98,6 +108,7 @@ def test_get_entry_by_date_returns_day_document():
 
 
 def test_update_entry_changes_requested_entry():
+    """test that update_entry updates the correct entry and only updates the provided fields"""
     fake_collection = FakeCollection()
     entry_service.entries_collection = fake_collection
 

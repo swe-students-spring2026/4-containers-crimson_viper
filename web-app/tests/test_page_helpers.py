@@ -13,12 +13,15 @@ page_routes.render_template = lambda template, **kwargs: str(kwargs)
 
 
 class DummyUser(UserMixin):
+    """simple user class for testing login"""
+
     def __init__(self, user_id, username):
         self.id = user_id
         self.username = username
 
 
 def make_app():
+    """create a Flask app with the page routes and a dummy login setup for testing"""
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "..", "templates"))
@@ -30,10 +33,12 @@ def make_app():
 
     @login_manager.user_loader
     def load_user(user_id):
+        """simple user loader that returns a dummy user for any user_id"""
         return DummyUser(user_id, "lan")
 
     @app.route("/force-login")
     def force_login():
+        """route to log in a dummy user for testing purposes"""
         login_user(DummyUser("1", "lan"))
         return "logged in"
 
@@ -42,10 +47,12 @@ def make_app():
 
 
 def login(client):
+    """helper function to log in the test client"""
     client.get("/force-login")
 
 
 def test_reflect_default_prompt_mode():
+    """test that the reflect route defaults to prompt mode and uses the default prompt when no entry exists"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -74,6 +81,7 @@ def test_reflect_default_prompt_mode():
 
 
 def test_reflect_continue_mode_uses_existing_prompt_entry():
+    """test that the reflect route in continue mode uses the existing prompt entry data instead of defaults"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -114,6 +122,7 @@ def test_reflect_continue_mode_uses_existing_prompt_entry():
 
 
 def test_reflect_selected_prompt_overrides_default():
+    """test that the reflect route uses the selected prompt from the query parameters instead of the default when provided"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -143,6 +152,7 @@ def test_reflect_selected_prompt_overrides_default():
 
 
 def test_history_shows_saved_count():
+    """test that the history route shows the correct count of saved journal entries for the day"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -168,6 +178,7 @@ def test_history_shows_saved_count():
 
 
 def test_create_entry_page_with_timestamp():
+    """test that creating an entry with a timestamp calls create_entry with the correct data"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -208,6 +219,7 @@ def test_create_entry_page_with_timestamp():
 
 
 def test_create_entry_page_without_timestamp():
+    """test that creating an entry without a timestamp calls create_entry and does not include a timestamp in the entry data"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -218,6 +230,7 @@ def test_create_entry_page_without_timestamp():
     try:
 
         def fake_create_entry(username, entry_date, entry_data):
+            """capture the arguments passed to create_entry for assertions"""
             captured["entry_data"] = entry_data
 
         page_routes.create_entry = fake_create_entry
@@ -239,6 +252,7 @@ def test_create_entry_page_without_timestamp():
 
 
 def test_update_entry_page_with_timestamp():
+    """test that updating an entry with a timestamp calls update_entry with the correct data and includes the timestamp in the updated data"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -249,6 +263,7 @@ def test_update_entry_page_with_timestamp():
     try:
 
         def fake_update_entry(username, entry_date, entry_index, updated_data):
+            """capture the arguments passed to update_entry for assertions"""
             captured["username"] = username
             captured["entry_date"] = entry_date
             captured["entry_index"] = entry_index
@@ -277,6 +292,7 @@ def test_update_entry_page_with_timestamp():
 
 
 def test_create_task_page_with_deadline_calls_add_task():
+    """test that creating a task with a deadline calls add_task with the correct data and includes the deadline in the task data"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -288,6 +304,7 @@ def test_create_task_page_with_deadline_calls_add_task():
     try:
 
         def fake_add_task(username, entry_date, task_data):
+            """capture the arguments passed to add_task for assertions"""
             captured["username"] = username
             captured["entry_date"] = entry_date
             captured["task_data"] = task_data
@@ -316,6 +333,8 @@ def test_create_task_page_with_deadline_calls_add_task():
 
 
 def test_create_task_page_blank_title_skips_add_task():
+    """test that creating a task with a blank title does not call add_task and redirects back to the tasks page"""
+
     app = make_app()
     client = app.test_client()
     login(client)
@@ -326,6 +345,7 @@ def test_create_task_page_blank_title_skips_add_task():
     try:
 
         def fake_add_task(username, entry_date, task_data):
+            """set a flag if add_task is called to verify that it is not called when the title is blank"""
             called["add_task"] = True
 
         page_routes.add_task = fake_add_task
@@ -346,6 +366,7 @@ def test_create_task_page_blank_title_skips_add_task():
 
 
 def test_update_task_page_blank_title_becomes_untitled_and_completed_true():
+    """test that updating a task with a blank title calls edit_task with the title set to "Untitled task" and completed set to True"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -356,6 +377,7 @@ def test_update_task_page_blank_title_becomes_untitled_and_completed_true():
     try:
 
         def fake_edit_task(username, entry_date, task_index, updated_task):
+            """capture the arguments passed to edit_task for assertions and verify that a blank title is converted to "Untitled task" and completed is set to True"""
             captured["username"] = username
             captured["entry_date"] = entry_date
             captured["task_index"] = task_index
@@ -381,6 +403,7 @@ def test_update_task_page_blank_title_becomes_untitled_and_completed_true():
 
 
 def test_toggle_task_page_valid_index_toggles_completed():
+    """test that toggling a task with a valid index calls edit_task with the completed field toggled to the opposite value"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -395,6 +418,7 @@ def test_toggle_task_page_valid_index_toggles_completed():
         }
 
         def fake_edit_task(username, entry_date, task_index, updated_task):
+            """capture the arguments passed to edit_task for assertions and verify that the completed field is toggled to the opposite value"""
             captured["updated_task"] = updated_task
 
         page_routes.edit_task = fake_edit_task
@@ -410,6 +434,7 @@ def test_toggle_task_page_valid_index_toggles_completed():
 
 
 def test_toggle_task_page_invalid_index_does_not_call_edit():
+    """test that toggling a task with an invalid index does not call edit_task and redirects back to the tasks page"""
     app = make_app()
     client = app.test_client()
     login(client)
@@ -422,6 +447,7 @@ def test_toggle_task_page_invalid_index_does_not_call_edit():
         page_routes._get_day_document = lambda username, entry_date: {"tasks": []}
 
         def fake_edit_task(username, entry_date, task_index, updated_task):
+            """set a flag if edit_task is called to verify that it is not called when the task index is invalid"""
             called["edit_task"] = True
 
         page_routes.edit_task = fake_edit_task
@@ -436,6 +462,7 @@ def test_toggle_task_page_invalid_index_does_not_call_edit():
 
 
 def test_delete_task_page_calls_delete_task():
+    """test that deleting a task with a valid index calls delete_task with the correct username, entry date, and task index"""
     app = make_app()
     client = app.test_client()
     login(client)
