@@ -33,4 +33,4 @@ jobs:
         env:
           PYTHONPATH: .
         run: |
-          pipenv run pytest --cov=. --cov-report=term-missing
+          pipenv run python -m pytest --cov=. --cov-report=term-missing
