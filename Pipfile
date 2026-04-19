@@ -7,6 +7,9 @@ name = "pypi"
 
 [dev-packages]
 pytest-cov = "*"
+flask = "*"
+pymongo = "*"
+python-dotenv = "*"
 
 [requires]
 python_version = "3.13"
