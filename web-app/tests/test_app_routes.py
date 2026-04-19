@@ -1,3 +1,4 @@
+# pylint: disable=too-few-public-methods
 """
 testing app.py routes
 """
@@ -110,7 +111,7 @@ def test_login_get_renders_page():
 
 
 def test_login_post_invalid_credentials_shows_error():
-    """test that POST /login with invalid credentials re-renders"""
+    """for POST /login with invalid credentials re-renders"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -260,7 +261,7 @@ def test_index_redirects_logged_out_user_to_login():
 
 
 def test_index_redirects_logged_in_user_to_home():
-    """test that GET / redirects to the home page when the user is authenticated and does not include /login in the redirect url"""
+    """GET / redirects to the home page and doesn't include /login in the redirect url"""
     fake_users = FakeUsersCollection()
     user_id = ObjectId()
     fake_users.users.append(

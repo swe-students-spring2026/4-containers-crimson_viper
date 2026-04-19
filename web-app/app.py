@@ -1,8 +1,11 @@
+"""
+This is the main file for the Flask application.
+"""
+
+import os
 from flask import Flask, render_template, request, redirect, url_for
-from datetime import date
 
 # for the login
-import os
 from flask_login import (
     LoginManager,
     UserMixin,
@@ -37,6 +40,8 @@ login_manager.login_view = "login"
 
 
 class User(UserMixin):
+    """User class for Flask-Login."""
+
     def __init__(self, user_data):
         self.id = str(user_data["_id"])
         self.email = user_data["email"]
@@ -45,19 +50,22 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
+    """Load user from the database."""
     # session stores user's _id; load user by _id
     try:
         oid = ObjectId(user_id) if isinstance(user_id, str) else user_id
         user = db.users.find_one({"_id": oid})
         if user:
             return User(user)
-    except Exception:
-        pass
+    except (TypeError, ValueError) as e:
+        print(f"Error loading user: {e}")
     return None
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    """Login route for the application."""
+
     if request.method == "POST":
         # emails arent case senstitive
         email = request.form.get("email", "").strip().lower()
@@ -78,6 +86,8 @@ def login():
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
+    """Signup route for the application."""
+
     if request.method == "POST":
         # email not case sensititve
         email = request.form.get("email", "").strip().lower()
@@ -111,12 +121,14 @@ def signup():
 @app.route("/logout")
 @login_required
 def logout():
+    """Logout route for the application."""
     logout_user()
     return redirect(url_for("login"))
 
 
 @app.route("/")
 def index():
+    """Index route for the application."""
     if current_user.is_authenticated:
         return redirect(url_for("pages.home", username=current_user.username))
     return redirect(url_for("login"))

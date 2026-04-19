@@ -86,7 +86,7 @@ def test_get_all_entries_returns_find_result():
 
 
 def test_get_entry_by_date_returns_day_document():
-    """test that get_entry_by_date returns the correct day document with journal entries sorted by created_at"""
+    """returns the correct day document with journal entries sorted by created_at"""
     fake_collection = FakeCollection()
     entry_service.entries_collection = fake_collection
 
