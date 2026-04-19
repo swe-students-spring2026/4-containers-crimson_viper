@@ -12,12 +12,12 @@ requests = "*"
 pathlib = "*"
 flask-login = "*"
 click = "*"
-pylint = "*"
-black = "*"
 
 [dev-packages]
 pytest = "*"
 pytest-cov = "*"
+pylint = "*"
+black = "*"
 
 [requires]
 python_version = "3.9"
