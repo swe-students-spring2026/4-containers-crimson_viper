@@ -6,14 +6,15 @@ Machine learning client transcribing audio
 """
 
 import time
+
 import whisper
 from pymongo import MongoClient
 from transformers import pipeline
 
 client = MongoClient("mongodb://mongodb:27017/")
-db = client["crimson_viper"]
-audio_collection = db["audio_jobs"]
-entries_collection = db["entries"]
+database = client["crimson_viper"]
+audio_collection = database["audio_jobs"]
+entries_collection = database["entries"]
 
 model = whisper.load_model("tiny")
 
@@ -28,28 +29,23 @@ ALLOWED_EMOTIONS = {"anger", "disgust", "fear", "joy", "neutral", "sadness", "su
 def main():
     """main loop that continuously checks for unprocessed audio files and processes them"""
     while True:
-        # i think this makes sense for us to be able to find any audio
-        # files that haven't yet been processed by the ml model
         job = audio_collection.find_one({"status": "unprocessed"})
 
-        # if there exists an audio file that hasn't yet been processed,
-        # then we process it and then update the database
         if job:
             print("found an unprocessed audio file")
             path = job["audio_path"]
             username = job["username"]
             created_at = job["created_at"]
-            date = job.get("date")  # Add this line
+            date = job.get("date")
             entry_type = job.get("entry_type", "journal")
             prompt_text = job.get("prompt_text", "")
 
             if path:
-                result = model.transcribe(path, language="en")
+                transcription_result = model.transcribe(path, language="en")
                 print("transcribed audio file")
-                text = result["text"]
+                text = transcription_result["text"]
             else:
                 text = job.get("transcription", "")
-                result = {"text": text}
 
             if text and text.strip():
                 emotion_result = emotion_analyzer(text, truncation=True)

@@ -2,6 +2,8 @@
 
 [![lint-free](https://github.com/swe-students-spring2026/4-containers-crimson_viper/actions/workflows/lint.yml/badge.svg)](https://github.com/swe-students-spring2026/4-containers-crimson_viper/actions/workflows/lint.yml)
 [![log github events](https://github.com/swe-students-spring2026/4-containers-crimson_viper/actions/workflows/event-logger.yml/badge.svg)](https://github.com/swe-students-spring2026/4-containers-crimson_viper/actions/workflows/event-logger.yml)
+[![ML Client Workflow](https://github.com/swe-students-spring2026/4-containers-crimson_viper/actions/workflows/ml-client.yml/badge.svg)](https://github.com/swe-students-spring2026/4-containers-crimson_viper/actions/workflows/ml-client.yml)
+
 ## Project Description
 
 This project is a containerized journaling application built with three connected subsystems: a Flask web app, a machine learning client, and a MongoDB database.

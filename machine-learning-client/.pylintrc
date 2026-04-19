@@ -1,0 +1,2 @@
+[MASTER]
+ignore=.venv,__pycache__,.pytest_cache
