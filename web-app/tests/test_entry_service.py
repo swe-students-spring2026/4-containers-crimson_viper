@@ -1,4 +1,4 @@
-# pylint: disable=too-few-public-methods
+# pylint: disable=protected-access,unused-argument,too-few-public-methods
 """
 testing entry service functions
 """
@@ -15,6 +15,8 @@ class FakeUpdateResult:
 
 
 class FakeCollection:
+    """fake collection that mimics pymongo collection for testing entry service functions"""
+
     def __init__(self):
         """fake collection that mimics pymongo collection"""
         self.find_one_result = None

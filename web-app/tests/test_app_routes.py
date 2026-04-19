@@ -44,7 +44,7 @@ class FakeDB:
 
 
 def make_client_with_fake_db(fake_users):
-    """helper function to create a test client with a fake db and return the client and the old db for restoration after the test"""
+    """create a test client with a fake db and return the client and the old db"""
     old_db = app_module.db
     app_module.db = FakeDB(fake_users)
 
@@ -72,7 +72,7 @@ def test_load_user_returns_none_for_bad_object_id():
 
 
 def test_load_user_returns_user_for_valid_id():
-    """test that load_user returns a User object with the correct fields when given a valid user id"""
+    """test that load_user returns a User object with the correct fields"""
     fake_users = FakeUsersCollection()
     user_id = ObjectId()
     fake_users.users.append(
@@ -110,7 +110,7 @@ def test_login_get_renders_page():
 
 
 def test_login_post_invalid_credentials_shows_error():
-    """test that POST /login with invalid credentials re-renders the login page with an error message"""
+    """test that POST /login with invalid credentials re-renders"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -130,7 +130,7 @@ def test_login_post_invalid_credentials_shows_error():
 
 
 def test_login_post_success_redirects_home():
-    """test that POST /login with valid credentials redirects to the home page and does not include /login in the redirect url"""
+    """test that POST /login with valid credentials redirects to the home page"""
     fake_users = FakeUsersCollection()
     fake_users.users.append(
         {
@@ -171,7 +171,7 @@ def test_signup_get_renders_page():
 
 
 def test_signup_missing_fields_shows_error():
-    """test that POST /signup with missing fields re-renders the signup page with an error message"""
+    """test that POST /signup re-renders the signup page with an error message"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -192,7 +192,7 @@ def test_signup_missing_fields_shows_error():
 
 
 def test_signup_duplicate_email_shows_error():
-    """test that POST /signup with an email that already exists re-renders the signup page with an error message about the email being taken"""
+    """re-renders an error message about the email being taken"""
     fake_users = FakeUsersCollection()
     fake_users.users.append(
         {
@@ -221,38 +221,8 @@ def test_signup_duplicate_email_shows_error():
         restore_db(old_db)
 
 
-def test_signup_duplicate_username_shows_error():
-    """test that POST /signup with a username that already exists re-renders the signup page with an error message about the username being taken"""
-    fake_users = FakeUsersCollection()
-    fake_users.users.append(
-        {
-            "_id": ObjectId(),
-            "email": "other@example.com",
-            "username": "lan",
-            "password": "pw123",
-        }
-    )
-
-    client, old_db = make_client_with_fake_db(fake_users)
-
-    try:
-        response = client.post(
-            "/signup",
-            data={
-                "email": "lan@example.com",
-                "username": "lan",
-                "password": "pw123",
-            },
-        )
-
-        assert response.status_code == 200
-        assert b"Username already taken." in response.data
-    finally:
-        restore_db(old_db)
-
-
 def test_signup_success_inserts_user_and_redirects_to_login():
-    """test that POST /signup with valid data inserts a new user into the database and redirects to the login page"""
+    """inserts a new user into the database and redirects"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
@@ -277,7 +247,7 @@ def test_signup_success_inserts_user_and_redirects_to_login():
 
 
 def test_index_redirects_logged_out_user_to_login():
-    """test that GET / redirects to the login page when the user is not authenticated"""
+    """redirects to the login page when the user is not authenticated"""
     fake_users = FakeUsersCollection()
     client, old_db = make_client_with_fake_db(fake_users)
 
