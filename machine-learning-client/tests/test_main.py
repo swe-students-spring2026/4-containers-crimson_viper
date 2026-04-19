@@ -222,7 +222,7 @@ def test_uses_existing_transcription_when_audio_path_missing():
     except KeyboardInterrupt:
         pass
 
-    assert fake_model.transcribe_calls == []
+    assert not fake_model.transcribe_calls
 
     audio_update = audio_collection.update_one_calls[0]
     assert audio_update["update"]["$set"]["transcription"] == "Typed fallback text"
@@ -327,5 +327,5 @@ def test_does_nothing_when_no_unprocessed_job():
         pass
 
     assert audio_collection.find_one_calls == [{"status": "unprocessed"}]
-    assert audio_collection.update_one_calls == []
-    assert entries_collection.update_one_calls == []
+    assert not audio_collection.update_one_calls
+    assert not entries_collection.update_one_calls
