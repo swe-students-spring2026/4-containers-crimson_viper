@@ -3,6 +3,7 @@ Has the page routes for the app
 """
 
 from datetime import date as dt_date, datetime, timedelta
+import random
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_required, current_user
 
@@ -141,14 +142,31 @@ def today():
     """
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
-    normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
-    return render_template(
-        "day.html",
-        date=normalized_date,
-        entry=entry,
-        username=username,
-        prev_date=prev_date,
-        next_date=next_date,
+    mode = request.args.get("mode", "prompt")
+    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
+    existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
+
+    selected_prompt = random.choice(PROMPTS)
+
+    if mode == "continue" and existing_entry and not selected_prompt:
+        current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
+        transcript_value = existing_entry.get("transcript", "")
+    else:
+        current_prompt = selected_prompt or PROMPTS[0]
+        transcript_value = ""
+
+        existing_entry = None
+        existing_entry_index = None
+
+    prompt_choices = _build_prompt_choices(current_prompt)
+
+    audio_jobs = list(
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": selected_date,
+            }
+        ).sort("created_at", -1)
     )
 
 
