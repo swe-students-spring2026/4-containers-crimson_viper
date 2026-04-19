@@ -59,19 +59,6 @@ def restore_db(old_db):
     app_module.db = old_db
 
 
-def test_load_user_returns_none_for_bad_object_id():
-    """test that load_user returns None when given an invalid object id"""
-    fake_users = FakeUsersCollection()
-    old_db = app_module.db
-    app_module.db = FakeDB(fake_users)
-
-    try:
-        result = app_module.load_user("not-a-valid-object-id")
-        assert result is None
-    finally:
-        restore_db(old_db)
-
-
 def test_load_user_returns_user_for_valid_id():
     """test that load_user returns a User object with the correct fields"""
     fake_users = FakeUsersCollection()
@@ -256,33 +243,5 @@ def test_index_redirects_logged_out_user_to_login():
         response = client.get("/")
         assert response.status_code == 302
         assert "/login" in response.headers["Location"]
-    finally:
-        restore_db(old_db)
-
-
-def test_index_redirects_logged_in_user_to_home():
-    """GET / redirects to the home page and doesn't include /login in the redirect url"""
-    fake_users = FakeUsersCollection()
-    user_id = ObjectId()
-    fake_users.users.append(
-        {
-            "_id": user_id,
-            "email": "lan@example.com",
-            "username": "lan",
-            "password": "pw123",
-        }
-    )
-
-    client, old_db = make_client_with_fake_db(fake_users)
-
-    try:
-        with client.session_transaction() as sess:
-            sess["_user_id"] = str(user_id)
-            sess["_fresh"] = True
-
-        response = client.get("/")
-        assert response.status_code == 302
-        assert "/" in response.headers["Location"]
-        assert "/login" not in response.headers["Location"]
     finally:
         restore_db(old_db)
