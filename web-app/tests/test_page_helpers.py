@@ -1,8 +1,16 @@
+"""Tests for page route helpers and route behavior."""
+
+# pylint: disable=protected-access,unused-argument
+
+import os
+
 from flask import Flask
 from flask_login import LoginManager, UserMixin, login_user
-import os
-import routes.page_routes as page_routes
+
+from routes import page_routes
+
 page_routes.render_template = lambda template, **kwargs: str(kwargs)
+
 
 class DummyUser(UserMixin):
     def __init__(self, user_id, username):
@@ -13,10 +21,7 @@ class DummyUser(UserMixin):
 def make_app():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    app = Flask(
-        __name__,
-        template_folder=os.path.join(BASE_DIR, "..", "templates")
-    )
+    app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "..", "templates"))
     app.config["SECRET_KEY"] = "test-secret"
     app.config["LOGIN_DISABLED"] = False
 
@@ -67,6 +72,7 @@ def test_reflect_default_prompt_mode():
         page_routes._day_context = old_day_context
         page_routes._get_prompt_entry = old_get_prompt_entry
 
+
 def test_reflect_continue_mode_uses_existing_prompt_entry():
     app = make_app()
     client = app.test_client()
@@ -106,6 +112,7 @@ def test_reflect_continue_mode_uses_existing_prompt_entry():
         page_routes._day_context = old_day_context
         page_routes._get_prompt_entry = old_get_prompt_entry
 
+
 def test_reflect_selected_prompt_overrides_default():
     app = make_app()
     client = app.test_client()
@@ -134,6 +141,7 @@ def test_reflect_selected_prompt_overrides_default():
         page_routes._day_context = old_day_context
         page_routes._get_prompt_entry = old_get_prompt_entry
 
+
 def test_history_shows_saved_count():
     app = make_app()
     client = app.test_client()
@@ -158,6 +166,7 @@ def test_history_shows_saved_count():
     finally:
         page_routes._get_day_document = old_get_day_document
 
+
 def test_create_entry_page_with_timestamp():
     app = make_app()
     client = app.test_client()
@@ -167,6 +176,7 @@ def test_create_entry_page_with_timestamp():
     old_create_entry = page_routes.create_entry
 
     try:
+
         def fake_create_entry(username, entry_date, entry_data):
             captured["username"] = username
             captured["entry_date"] = entry_date
@@ -196,6 +206,7 @@ def test_create_entry_page_with_timestamp():
     finally:
         page_routes.create_entry = old_create_entry
 
+
 def test_create_entry_page_without_timestamp():
     app = make_app()
     client = app.test_client()
@@ -205,6 +216,7 @@ def test_create_entry_page_without_timestamp():
     old_create_entry = page_routes.create_entry
 
     try:
+
         def fake_create_entry(username, entry_date, entry_data):
             captured["entry_data"] = entry_data
 
@@ -225,6 +237,7 @@ def test_create_entry_page_without_timestamp():
     finally:
         page_routes.create_entry = old_create_entry
 
+
 def test_update_entry_page_with_timestamp():
     app = make_app()
     client = app.test_client()
@@ -234,6 +247,7 @@ def test_update_entry_page_with_timestamp():
     old_update_entry = page_routes.update_entry
 
     try:
+
         def fake_update_entry(username, entry_date, entry_index, updated_data):
             captured["username"] = username
             captured["entry_date"] = entry_date
@@ -261,6 +275,7 @@ def test_update_entry_page_with_timestamp():
     finally:
         page_routes.update_entry = old_update_entry
 
+
 def test_create_task_page_with_deadline_calls_add_task():
     app = make_app()
     client = app.test_client()
@@ -271,6 +286,7 @@ def test_create_task_page_with_deadline_calls_add_task():
     old_add_task = page_routes.add_task
 
     try:
+
         def fake_add_task(username, entry_date, task_data):
             captured["username"] = username
             captured["entry_date"] = entry_date
@@ -308,6 +324,7 @@ def test_create_task_page_blank_title_skips_add_task():
     old_add_task = page_routes.add_task
 
     try:
+
         def fake_add_task(username, entry_date, task_data):
             called["add_task"] = True
 
@@ -337,6 +354,7 @@ def test_update_task_page_blank_title_becomes_untitled_and_completed_true():
     old_edit_task = page_routes.edit_task
 
     try:
+
         def fake_edit_task(username, entry_date, task_index, updated_task):
             captured["username"] = username
             captured["entry_date"] = entry_date
@@ -373,9 +391,7 @@ def test_toggle_task_page_valid_index_toggles_completed():
 
     try:
         page_routes._get_day_document = lambda username, entry_date: {
-            "tasks": [
-                {"title": "Read", "completed": False}
-            ]
+            "tasks": [{"title": "Read", "completed": False}]
         }
 
         def fake_edit_task(username, entry_date, task_index, updated_task):
@@ -403,9 +419,7 @@ def test_toggle_task_page_invalid_index_does_not_call_edit():
     old_edit_task = page_routes.edit_task
 
     try:
-        page_routes._get_day_document = lambda username, entry_date: {
-            "tasks": []
-        }
+        page_routes._get_day_document = lambda username, entry_date: {"tasks": []}
 
         def fake_edit_task(username, entry_date, task_index, updated_task):
             called["edit_task"] = True
@@ -430,6 +444,7 @@ def test_delete_task_page_calls_delete_task():
     old_delete_task = page_routes.delete_task
 
     try:
+
         def fake_delete_task(username, entry_date, task_index):
             captured["username"] = username
             captured["entry_date"] = entry_date

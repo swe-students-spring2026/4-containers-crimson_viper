@@ -1,9 +1,9 @@
+# pylint: disable=too-few-public-methods
 """
 testing entry service functions
 """
 
-import services.entry_service as entry_service
-
+from services import entry_service
 
 class FakeUpdateResult:
     def __init__(self, modified_count=1, upserted_id=None):
