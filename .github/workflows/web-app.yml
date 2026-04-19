@@ -24,16 +24,16 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pipenv
 
-      - name: Remove broken env if present
+      - name: Remove existing env
         run: |
           pipenv --rm || true
 
-      - name: Install dependencies
+      - name: Install dependencies from lockfile
         env:
           PIPENV_IGNORE_VIRTUALENVS: "1"
         run: |
           pipenv --python 3.9
-          pipenv install --dev
+          pipenv sync --dev
 
       - name: Verify pytest is installed
         run: |
