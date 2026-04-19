@@ -75,9 +75,7 @@ def load_main_with_fakes(fake_model=None, fake_emotion_output=None):
     fake_whisper.load_model = build_fake_model_loader(fake_model)
 
     fake_transformers = types.ModuleType("transformers")
-    fake_transformers.pipeline = build_fake_pipeline_factory(
-        fake_emotion_output
-    )
+    fake_transformers.pipeline = build_fake_pipeline_factory(fake_emotion_output)
 
     class FakeMongoClient:  # pylint: disable=too-few-public-methods
         """Minimal Mongo client fake for import-time wiring."""
@@ -167,9 +165,7 @@ def test_processes_unprocessed_audio_job_with_audio_path():
         pass
 
     assert audio_collection.find_one_calls == [{"status": "unprocessed"}]
-    assert fake_model.transcribe_calls == [
-        {"path": "/tmp/test.wav", "language": "en"}
-    ]
+    assert fake_model.transcribe_calls == [{"path": "/tmp/test.wav", "language": "en"}]
 
     assert len(audio_collection.update_one_calls) == 1
     audio_update = audio_collection.update_one_calls[0]
