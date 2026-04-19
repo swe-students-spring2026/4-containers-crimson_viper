@@ -1,6 +1,8 @@
+"""Tests for the machine learning client entry processing flow."""
+
+import importlib
 import os
 import sys
-import importlib
 import types
 from datetime import datetime
 
@@ -8,16 +10,20 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 
 class FakeAudioCollection:
+    """Minimal audio collection fake used by the tests."""
+
     def __init__(self, job):
         self.job = job
         self.find_one_calls = []
         self.update_one_calls = []
 
     def find_one(self, query):
+        """Record the query and return the configured job."""
         self.find_one_calls.append(query)
         return self.job
 
     def update_one(self, query, update, upsert=False):
+        """Record updates applied to the fake collection."""
         self.update_one_calls.append(
             {
                 "query": query,
@@ -27,11 +33,14 @@ class FakeAudioCollection:
         )
 
 
-class FakeEntriesCollection:
+class FakeEntriesCollection: 
+    """Minimal entries collection fake used by the tests."""
+
     def __init__(self):
         self.update_one_calls = []
 
     def update_one(self, query, update, upsert=False):
+        """Record updates applied to the fake collection."""
         self.update_one_calls.append(
             {
                 "query": query,
@@ -42,20 +51,20 @@ class FakeEntriesCollection:
 
 
 class FakeModel:
+    """Simple Whisper stand-in that returns a predefined transcript."""
+
     def __init__(self, result_text="default transcript"):
         self.result_text = result_text
         self.transcribe_calls = []
 
     def transcribe(self, path, language="en"):
+        """Record the transcription request and return fake output."""
         self.transcribe_calls.append({"path": path, "language": language})
         return {"text": self.result_text}
 
 
 def load_main_with_fakes(fake_model=None, fake_emotion_output=None):
-    """
-    Import main.py with fake whisper / transformers / pymongo modules
-    so import-time model loading does not hit real external dependencies.
-    """
+    """Import ``main.py`` with fake dependencies injected into ``sys.modules``."""
     if fake_model is None:
         fake_model = FakeModel()
 
@@ -63,18 +72,20 @@ def load_main_with_fakes(fake_model=None, fake_emotion_output=None):
         fake_emotion_output = [{"label": "joy"}]
 
     fake_whisper = types.ModuleType("whisper")
-    fake_whisper.load_model = lambda name: fake_model
+    fake_whisper.load_model = build_fake_model_loader(fake_model)
 
     fake_transformers = types.ModuleType("transformers")
-    fake_transformers.pipeline = lambda *args, **kwargs: (
-        lambda text, truncation=True: fake_emotion_output
+    fake_transformers.pipeline = build_fake_pipeline_factory(
+        fake_emotion_output
     )
 
     class FakeMongoClient:
+        """Minimal Mongo client fake for import-time wiring."""
+
         def __init__(self, uri):
             self.uri = uri
 
-        def __getitem__(self, name):
+        def __getitem__(self, _name):
             return {
                 "audio_jobs": None,
                 "entries": None,
@@ -93,7 +104,30 @@ def load_main_with_fakes(fake_model=None, fake_emotion_output=None):
     return importlib.import_module("main")
 
 
+def build_fake_model_loader(fake_model):
+    """Create a fake ``whisper.load_model`` implementation."""
+
+    def fake_load_model(_name):
+        return fake_model
+
+    return fake_load_model
+
+
+def build_fake_pipeline_factory(fake_emotion_output):
+    """Create a fake ``transformers.pipeline`` factory."""
+
+    def fake_pipeline(*_args, **_kwargs):
+        def fake_emotion_analyzer(_text, **_analyzer_kwargs):
+            return fake_emotion_output
+
+        return fake_emotion_analyzer
+
+    return fake_pipeline
+
+
 def stop_after_one_loop(module):
+    """Replace ``sleep`` so the infinite loop exits after one iteration."""
+
     def fake_sleep(_seconds):
         raise KeyboardInterrupt
 
@@ -101,6 +135,8 @@ def stop_after_one_loop(module):
 
 
 def test_processes_unprocessed_audio_job_with_audio_path():
+    """Process a queued job by transcribing the audio file."""
+
     fake_model = FakeModel("Hello from audio")
     main = load_main_with_fakes(
         fake_model=fake_model,
@@ -156,6 +192,8 @@ def test_processes_unprocessed_audio_job_with_audio_path():
 
 
 def test_uses_existing_transcription_when_audio_path_missing():
+    """Fall back to an existing transcription when no audio file is present."""
+
     fake_model = FakeModel("should not be used")
     main = load_main_with_fakes(
         fake_model=fake_model,
@@ -190,13 +228,17 @@ def test_uses_existing_transcription_when_audio_path_missing():
     assert audio_update["update"]["$set"]["transcription"] == "Typed fallback text"
     assert audio_update["update"]["$set"]["emotion"] == "sadness"
 
-    pushed_entry = entries_collection.update_one_calls[0]["update"]["$push"]["journal_entries"]
+    pushed_entry = entries_collection.update_one_calls[0]["update"]["$push"][
+        "journal_entries"
+    ]
     assert pushed_entry["transcript"] == "Typed fallback text"
     assert pushed_entry["entry_type"] == "journal"
     assert pushed_entry["prompt_text"] == ""
 
 
 def test_defaults_to_neutral_for_blank_text():
+    """Use a neutral emotion when the transcription is blank."""
+
     fake_model = FakeModel("   ")
     main = load_main_with_fakes(
         fake_model=fake_model,
@@ -227,11 +269,15 @@ def test_defaults_to_neutral_for_blank_text():
     audio_update = audio_collection.update_one_calls[0]
     assert audio_update["update"]["$set"]["emotion"] == "neutral"
 
-    pushed_entry = entries_collection.update_one_calls[0]["update"]["$push"]["journal_entries"]
+    pushed_entry = entries_collection.update_one_calls[0]["update"]["$push"][
+        "journal_entries"
+    ]
     assert pushed_entry["emotion"] == "neutral"
 
 
 def test_defaults_to_neutral_for_disallowed_emotion():
+    """Map unsupported emotion labels back to ``neutral``."""
+
     fake_model = FakeModel("I feel something odd")
     main = load_main_with_fakes(
         fake_model=fake_model,
@@ -264,6 +310,8 @@ def test_defaults_to_neutral_for_disallowed_emotion():
 
 
 def test_does_nothing_when_no_unprocessed_job():
+    """Avoid database updates when there is no queued work."""
+
     main = load_main_with_fakes()
 
     audio_collection = FakeAudioCollection(None)
