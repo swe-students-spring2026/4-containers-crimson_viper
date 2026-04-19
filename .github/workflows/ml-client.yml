@@ -1,0 +1,31 @@
+name: ML Client Workflow
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        subdir: [machine-learning-client]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          cd ${{ matrix.subdir }}
+          python -m pip install --upgrade pip
+          python -m pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          cd ${{ matrix.subdir }}
+          PYTHONPATH=. pytest --cov=main --cov-report=term-missing
