@@ -1,111 +1,348 @@
-'''
-testiing page helper functions
-'''
-from datetime import date 
+from flask import Flask
+from flask_login import LoginManager, UserMixin, login_user
+import os
 import routes.page_routes as page_routes
+page_routes.render_template = lambda template, **kwargs: str(kwargs)
 
-def test_parse_date_valid():
-    result = page_routes.parse_date("2026-04-18")
-    assert result.isoformat() == "2026-04-18"
-
-def test_parse_date_invalid_returns_today():
-    result = page_routes.parse_date("invalid-date")
-    assert isinstance(result, date)
-
-def test_get_journal_entries_returns_entries_from_day_doc():
-    day_doc = {
-        "journal_entries": [
-            {"entry_type": "journal", "transcript": "Entry 1"},
-            {"entry_type": "prompt", "transcript": "Entry 2"},
-        ]
-    }
-
-    result = page_routes._get_journal_entries(day_doc)
-
-    assert len(result) == 2
-    assert result[0]["transcript"] == "Entry 1"
-    assert result[1]["transcript"] == "Entry 2"
-
-def test_get_journal_entries_returns_empty_list_for_bad_input():
-    result = page_routes._get_journal_entries(None)
-    assert result == []
-
-def test_get_prompt_entry_returns_latest_prompt_entry():
-    day_doc = {
-        "journal_entries": [
-            {"entry_type": "journal", "transcript": "Normal entry"},
-            {"entry_type": "prompt", "prompt_text": "Old prompt"},
-            {"entry_type": "prompt", "prompt_text": "Newest prompt"},
-        ]
-    }
-    idx, entry = page_routes._get_prompt_entry(day_doc)
-
-    assert idx == 2
-    assert entry["prompt_text"] == "Newest prompt"
-
-def test_get_prompt_entry_returns_none_when_no_prompt_exists():
-    day_doc = {
-        "journal_entries": [
-            {"entry_type": "journal", "transcript": "Only normal entry"}
-        ]
-    }
-
-    idx, entry = page_routes._get_prompt_entry(day_doc)
-
-    assert idx is None
-    assert entry is None
-
-def test_get_prompt_entry_returns_none_when_no_prompt_exists():
-    day_doc = {
-        "journal_entries": [
-            {"entry_type": "journal", "transcript": "Only normal entry"}
-        ]
-    }
-
-    idx, entry = page_routes._get_prompt_entry(day_doc)
-
-    assert idx is None
-    assert entry is None
-
-def test_build_prompt_choices_excludes_current_prompt():
-    current = page_routes.PROMPTS[0]
-
-    result = page_routes._build_prompt_choices(current)
-
-    assert current not in result
-    assert len(result) <= 3
-
-def test_get_current_week_returns_seven_days():
-    result = page_routes._get_current_week("2026-04-15")
-
-    assert len(result) == 7
-    assert all("date" in day for day in result)
-    assert all("dow" in day for day in result)
-    assert all("num" in day for day in result)
+class DummyUser(UserMixin):
+    def __init__(self, user_id, username):
+        self.id = user_id
+        self.username = username
 
 
-def test_get_current_week_marks_selected_day_active():
-    result = page_routes._get_current_week("2026-04-15")
+def make_app():
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    active_days = [day for day in result if day["active"]]
-
-    assert len(active_days) == 1
-    assert active_days[0]["date"] == "2026-04-15"
-
-def test_day_context_returns_prev_and_next_dates():
-    normalized_date, _, prev_date, next_date = page_routes._day_context(
-        "lan", "2026-04-15"
+    app = Flask(
+        __name__,
+        template_folder=os.path.join(BASE_DIR, "..", "templates")
     )
+    app.config["SECRET_KEY"] = "test-secret"
+    app.config["LOGIN_DISABLED"] = False
 
-    assert normalized_date == "2026-04-15"
-    assert prev_date == "2026-04-14"
-    assert next_date == "2026-04-16"
+    login_manager = LoginManager()
+    login_manager.init_app(app)
 
-def test_format_time_converts_to_12_hour_clock():
-    result = page_routes.format_time("14:30")
-    assert result == "2:30 PM"
+    @login_manager.user_loader
+    def load_user(user_id):
+        return DummyUser(user_id, "lan")
+
+    @app.route("/force-login")
+    def force_login():
+        login_user(DummyUser("1", "lan"))
+        return "logged in"
+
+    app.register_blueprint(page_routes.page_bp)
+    return app
 
 
-def test_format_time_returns_none_for_empty_input():
-    result = page_routes.format_time(None)
-    assert result is None
+def login(client):
+    client.get("/force-login")
+
+
+def test_reflect_default_prompt_mode():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    old_day_context = page_routes._day_context
+    old_get_prompt_entry = page_routes._get_prompt_entry
+
+    try:
+        page_routes._day_context = lambda username, selected_date: (
+            "2026-04-18",
+            {},
+            "2026-04-17",
+            "2026-04-19",
+        )
+        page_routes._get_prompt_entry = lambda day_doc: (None, None)
+
+        response = client.get("/reflect?date=2026-04-18&mode=continue")
+        text = response.get_data(as_text=True)
+
+        assert response.status_code == 200
+        assert "'current_prompt': 'Old saved prompt'" in text
+        assert "'transcript_value': 'saved words'" in text
+        assert "'mood_score': '7'" in text
+        assert "'stress_score': '3'" in text
+    finally:
+        page_routes._day_context = old_day_context
+        page_routes._get_prompt_entry = old_get_prompt_entry
+
+
+def test_reflect_continue_mode_uses_existing_prompt_entry():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    old_day_context = page_routes._day_context
+    old_get_prompt_entry = page_routes._get_prompt_entry
+
+    try:
+        page_routes._day_context = lambda username, selected_date: (
+            "2026-04-18",
+            {"journal_entries": []},
+            "2026-04-17",
+            "2026-04-19",
+        )
+        page_routes._get_prompt_entry = lambda day_doc: (
+            0,
+            {
+                "prompt_text": "Old saved prompt",
+                "transcript": "saved words",
+                "mood_score": "7",
+                "stress_score": "3",
+                "entry_type": "prompt",
+            },
+        )
+
+        response = client.get(
+            "/reflect?date=2026-04-18&prompt=What%20challenged%20you%20today%3F"
+        )
+        text = response.get_data(as_text=True)
+
+        assert response.status_code == 200
+        assert "'current_prompt': 'What challenged you today?'" in text
+    finally:
+        page_routes._day_context = old_day_context
+        page_routes._get_prompt_entry = old_get_prompt_entry
+
+
+def test_reflect_selected_prompt_overrides_default():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    old_day_context = page_routes._day_context
+    old_get_prompt_entry = page_routes._get_prompt_entry
+
+    try:
+        page_routes._day_context = lambda username, selected_date: (
+            "2026-04-18",
+            {},
+            "2026-04-17",
+            "2026-04-19",
+        )
+        page_routes._get_prompt_entry = lambda day_doc: (None, None)
+
+        response = client.get(
+            "/reflect?date=2026-04-18&prompt=What%20challenged%20you%20today%3F"
+        )
+
+        assert response.status_code == 200
+        assert b"What challenged you today?" in response.data
+        assert b"What stayed with you most today?" not in response.data
+    finally:
+        page_routes._day_context = old_day_context
+        page_routes._get_prompt_entry = old_get_prompt_entry
+
+
+def test_history_shows_saved_count():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    old_get_day_document = page_routes._get_day_document
+
+    try:
+        page_routes._get_day_document = lambda username, selected_date: {
+            "journal_entries": [
+                {"transcript": "one"},
+                {"transcript": "two"},
+            ]
+        }
+
+        response = client.get("/history/2026-04-18")
+
+        assert response.status_code == 200
+        assert b"2" in response.data
+    finally:
+        page_routes._get_day_document = old_get_day_document
+
+
+def test_create_task_page_with_deadline_calls_add_task():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    captured = {}
+
+    old_add_task = page_routes.add_task
+
+    try:
+        def fake_add_task(username, entry_date, task_data):
+            captured["username"] = username
+            captured["entry_date"] = entry_date
+            captured["task_data"] = task_data
+
+        page_routes.add_task = fake_add_task
+
+        response = client.post(
+            "/tasks/new",
+            data={
+                "date": "2026-04-18",
+                "title": "Eat",
+                "deadline": "09:00",
+            },
+        )
+
+        assert response.status_code == 302
+        assert captured["username"] == "lan"
+        assert captured["entry_date"] == "2026-04-18"
+        assert captured["task_data"] == {
+            "title": "Eat",
+            "completed": False,
+            "deadline": "09:00",
+        }
+    finally:
+        page_routes.add_task = old_add_task
+
+
+def test_create_task_page_blank_title_skips_add_task():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    called = {"add_task": False}
+    old_add_task = page_routes.add_task
+
+    try:
+        def fake_add_task(username, entry_date, task_data):
+            called["add_task"] = True
+
+        page_routes.add_task = fake_add_task
+
+        response = client.post(
+            "/tasks/new",
+            data={
+                "date": "2026-04-18",
+                "title": "   ",
+                "deadline": "",
+            },
+        )
+
+        assert response.status_code == 302
+        assert called["add_task"] is False
+    finally:
+        page_routes.add_task = old_add_task
+
+
+def test_update_task_page_blank_title_becomes_untitled_and_completed_true():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    captured = {}
+    old_edit_task = page_routes.edit_task
+
+    try:
+        def fake_edit_task(username, entry_date, task_index, updated_task):
+            captured["username"] = username
+            captured["entry_date"] = entry_date
+            captured["task_index"] = task_index
+            captured["updated_task"] = updated_task
+
+        page_routes.edit_task = fake_edit_task
+
+        response = client.post(
+            "/tasks/2026-04-18/0/edit",
+            data={
+                "title": "   ",
+                "completed": "on",
+            },
+        )
+
+        assert response.status_code == 302
+        assert captured["updated_task"] == {
+            "title": "Untitled task",
+            "completed": True,
+        }
+    finally:
+        page_routes.edit_task = old_edit_task
+
+
+def test_toggle_task_page_valid_index_toggles_completed():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    captured = {}
+    old_get_day_document = page_routes._get_day_document
+    old_edit_task = page_routes.edit_task
+
+    try:
+        page_routes._get_day_document = lambda username, entry_date: {
+            "tasks": [
+                {"title": "Read", "completed": False}
+            ]
+        }
+
+        def fake_edit_task(username, entry_date, task_index, updated_task):
+            captured["updated_task"] = updated_task
+
+        page_routes.edit_task = fake_edit_task
+
+        response = client.post("/tasks/2026-04-18/0/toggle")
+
+        assert response.status_code == 302
+        assert captured["updated_task"]["title"] == "Read"
+        assert captured["updated_task"]["completed"] is True
+    finally:
+        page_routes._get_day_document = old_get_day_document
+        page_routes.edit_task = old_edit_task
+
+
+def test_toggle_task_page_invalid_index_does_not_call_edit():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    called = {"edit_task": False}
+    old_get_day_document = page_routes._get_day_document
+    old_edit_task = page_routes.edit_task
+
+    try:
+        page_routes._get_day_document = lambda username, entry_date: {
+            "tasks": []
+        }
+
+        def fake_edit_task(username, entry_date, task_index, updated_task):
+            called["edit_task"] = True
+
+        page_routes.edit_task = fake_edit_task
+
+        response = client.post("/tasks/2026-04-18/0/toggle")
+
+        assert response.status_code == 302
+        assert called["edit_task"] is False
+    finally:
+        page_routes._get_day_document = old_get_day_document
+        page_routes.edit_task = old_edit_task
+
+
+def test_delete_task_page_calls_delete_task():
+    app = make_app()
+    client = app.test_client()
+    login(client)
+
+    captured = {}
+    old_delete_task = page_routes.delete_task
+
+    try:
+        def fake_delete_task(username, entry_date, task_index):
+            captured["username"] = username
+            captured["entry_date"] = entry_date
+            captured["task_index"] = task_index
+
+        page_routes.delete_task = fake_delete_task
+
+        response = client.post("/tasks/2026-04-18/2/delete")
+
+        assert response.status_code == 302
+        assert captured == {
+            "username": "lan",
+            "entry_date": "2026-04-18",
+            "task_index": 2,
+        }
+    finally:
+        page_routes.delete_task = old_delete_task

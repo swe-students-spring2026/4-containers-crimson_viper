@@ -1,95 +1,126 @@
-'''
+"""
 testing entry service functions
-'''
+"""
+
 import services.entry_service as entry_service
+
 
 class FakeUpdateResult:
     def __init__(self, modified_count=1, upserted_id=None):
         self.modified_count = modified_count
         self.upserted_id = upserted_id
 
+
 class FakeCollection:
     def __init__(self):
         self.find_one_result = None
         self.find_result = []
         self.update_one_result = FakeUpdateResult()
+        self.last_find_one_query = None
         self.last_find_query = None
         self.last_update_one_args = None
         self.last_update_one_kwargs = None
 
     def find_one(self, query):
-        self.last_find_query = query
+        self.last_find_one_query = query
         return self.find_one_result
+
+    def find(self, query):
+        self.last_find_query = query
+        return self.find_result
 
     def update_one(self, *args, **kwargs):
         self.last_update_one_args = args
         self.last_update_one_kwargs = kwargs
         return self.update_one_result
 
+
 def test_create_entry_adds_entry():
     fake_collection = FakeCollection()
-    entry_service.db.entries = fake_collection
+    entry_service.entries_collection = fake_collection
 
-    # Simulate no existing entry
-    fake_collection.find_one_result = None
+    result = entry_service.create_entry(
+        "test_user",
+        "2026-04-18",
+        {"transcript": "test content", "entry_type": "journal"},
+    )
 
-    result = entry_service.create_entry("test_user", "test_page", "test_content")
+    assert result is True
+    assert fake_collection.last_update_one_args[0] == {
+        "username": "test_user",
+        "date": "2026-04-18",
+    }
 
-    assert result == True
-    assert fake_collection.last_find_query == {"username": "test_user", "page_name": "test_page"}
-    assert fake_collection.last_update_one_args[0] == {"username": "test_user", "page_name": "test_page"}
-    assert "$set" in fake_collection.last_update_one_kwargs["update"]
-    assert fake_collection.last_update_one_kwargs["upsert"] == True
+    pushed_entry = fake_collection.last_update_one_args[1]["$push"]["journal_entries"]
+    assert pushed_entry["transcript"] == "test content"
+    assert pushed_entry["entry_type"] == "journal"
+    assert "entry_id" in pushed_entry
+    assert "created_at" in pushed_entry
+    assert fake_collection.last_update_one_kwargs["upsert"] is True
 
-def test_get_all_entres_for_page():
+
+def test_get_all_entries_returns_find_result():
     fake_collection = FakeCollection()
-    entry_service.db.entries = fake_collection
+    entry_service.entries_collection = fake_collection
 
-    # Simulate some entries for the page
     fake_collection.find_result = [
-        {"username": "user1", "page_name": "test_page", "content": "entry1"},
-        {"username": "user2", "page_name": "test_page", "content": "entry2"},
+        {"_id": 1, "username": "user1", "date": "2026-04-18"},
+        {"_id": 2, "username": "user1", "date": "2026-04-19"},
     ]
 
-    result = entry_service.get_all_entries_for_page("test_page")
+    result = entry_service.get_all_entries("user1")
 
-    assert result == [
-        {"username": "user1", "page_name": "test_page", "content": "entry1"},
-        {"username": "user2", "page_name": "test_page", "content": "entry2"},
-    ]
-    assert fake_collection.last_find_query == {"page_name": "test_page"}
+    assert len(result) == 2
+    assert fake_collection.last_find_query == {"username": "user1"}
 
-def test_get_entry_by_date_sort_entries_and_adds_tasks():
+
+def test_get_entry_by_date_returns_day_document():
     fake_collection = FakeCollection()
-    entry_service.db.entries = fake_collection
+    entry_service.entries_collection = fake_collection
 
-    # Simulate some entries for the page
-    fake_collection.find_result = [
-        {"username": "user1", "page_name": "test_page", "content": "entry1", "date": "2024-01-01"},
-        {"username": "user2", "page_name": "test_page", "content": "entry2", "date": "2024-01-02"},
-    ]
+    fake_collection.find_one_result = {
+        "_id": 1,
+        "username": "user1",
+        "date": "2026-04-18",
+        "journal_entries": [
+            {"transcript": "later", "created_at": "2026-04-18T10:00:00"},
+            {"transcript": "earlier", "created_at": "2026-04-18T09:00:00"},
+        ],
+    }
 
-    result = entry_service.get_entry_by_date("test_page")
+    result = entry_service.get_entry_by_date("user1", "2026-04-18")
 
-    assert result == [
-        {"username": "user2", "page_name": "test_page", "content": "entry2", "date": "2024-01-02"},
-        {"username": "user1", "page_name": "test_page", "content": "entry1", "date": "2024-01-01"},
-    ]
-    assert fake_collection.last_find_query == {"page_name": "test_page"}
+    assert result["username"] == "user1"
+    assert result["date"] == "2026-04-18"
+    assert result["tasks"] == []
+    assert result["journal_entries"][0]["transcript"] == "earlier"
+    assert result["journal_entries"][1]["transcript"] == "later"
+
 
 def test_update_entry_changes_requested_entry():
     fake_collection = FakeCollection()
-    entry_service.db.entries = fake_collection
+    entry_service.entries_collection = fake_collection
 
-    # Simulate existing entry
-    fake_collection.find_one_result = {"username": "test_user", "page_name": "test_page", "content": "old_content"}
+    fake_collection.find_one_result = {
+        "journal_entries": [
+            {"transcript": "old content", "entry_type": "journal", "mood": "sad"}
+        ]
+    }
 
-    result = entry_service.update_entry("test_user", "test_page", "new_content")
+    result = entry_service.update_entry(
+        "test_user",
+        "2026-04-18",
+        0,
+        {"transcript": "new content"},
+    )
 
-    assert result == True
-    assert fake_collection.last_find_query == {"username": "test_user", "page_name": "test_page"}
-    assert fake_collection.last_update_one_args[0] == {"username": "test_user", "page_name": "test_page"}
-    assert "$set" in fake_collection.last_update_one_kwargs["update"]
-    assert fake_collection.last_update_one_kwargs["update"]["$set"]["content"] == "new_content"
-    assert fake_collection.last_update_one_kwargs["upsert"] == True
+    assert result == 1
+    assert fake_collection.last_update_one_args[0] == {
+        "username": "test_user",
+        "date": "2026-04-18",
+    }
 
+    updated_entry = fake_collection.last_update_one_args[1]["$set"]["journal_entries.0"]
+    assert updated_entry["transcript"] == "new content"
+    assert updated_entry["entry_type"] == "journal"
+    assert updated_entry["mood"] == "sad"
