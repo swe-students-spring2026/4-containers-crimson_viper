@@ -27,10 +27,10 @@ jobs:
       - name: Install dependencies
         run: |
           pipenv --python 3.9
-          pipenv install --dev
+          pipenv install --dev --system
 
       - name: Run tests
         env:
           PYTHONPATH: .
         run: |
-          pipenv run pytest --cov=. --cov-report=term-missing
+          pytest --cov=. --cov-report=term-missing
