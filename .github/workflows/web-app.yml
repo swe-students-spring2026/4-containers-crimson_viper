@@ -10,10 +10,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: web-app
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -30,10 +26,11 @@ jobs:
 
       - name: Install dependencies
         run: |
+          pipenv --python 3.9
           pipenv install --dev
 
       - name: Run tests
         env:
           PYTHONPATH: .
         run: |
-          pipenv run pytest tests --cov=. --cov-report=term-missing
+          pipenv run pytest --cov=. --cov-report=term-missing
