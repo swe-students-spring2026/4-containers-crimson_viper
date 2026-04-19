@@ -1,7 +1,10 @@
-import importlib
+import os
 import sys
+import importlib
 import types
 from datetime import datetime
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 
 class FakeAudioCollection:
