@@ -1,4 +1,5 @@
 """Has the page routes for the app."""
+
 import random
 from datetime import date as dt_date, datetime, timedelta
 from flask import Blueprint, redirect, render_template, request, url_for
@@ -112,6 +113,7 @@ def home():
         current_week=current_week,
         date=current_day,
     )
+
 
 @page_bp.route("/day")
 @login_required
@@ -307,9 +309,7 @@ def create_task_page():
             entry_date,
             {"title": title, "completed": False, "deadline": deadline_value},
         )
-    return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
-    )
+    return redirect(url_for("pages.day", username=username, date=entry_date) + "#tasks")
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/edit", methods=["POST"])
@@ -325,9 +325,7 @@ def update_task_page(date, task_index):
         "completed": completed,
     }
     edit_task(username, entry_date, task_index, updated_task)
-    return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
-    )
+    return redirect(url_for("pages.day", username=username, date=entry_date) + "#tasks")
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/toggle", methods=["POST"])
@@ -348,9 +346,7 @@ def toggle_task_page(date, task_index):
         }
         edit_task(username, entry_date, task_index, updated_task)
 
-    return redirect(
-        url_for("pages.day", username=username, date=entry_date) + "#tasks"
-    )
+    return redirect(url_for("pages.day", username=username, date=entry_date) + "#tasks")
 
 
 @page_bp.route("/tasks/<date>/<int:task_index>/delete", methods=["POST"])
