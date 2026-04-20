@@ -14,6 +14,7 @@ flask-login = "*"
 click = "*"
 pylint = "*"
 black = "*"
+pytest = "*"
 
 [dev-packages]
 pytest = "*"
