@@ -306,7 +306,7 @@ def delete_entry_page(date, entry_index):
     username = current_user.username
     entry_date = _parse_date(date).isoformat()
     delete_entry(username, entry_date, entry_index)
-    return redirect(url_for("pages.today", username=username, date=entry_date))
+    return redirect(url_for("pages.reflect", username=username, date=entry_date))
 
 
 @page_bp.route("/tasks/new", methods=["POST"])
@@ -379,5 +379,5 @@ def delete_task_page(date, task_index):
     entry_date = _parse_date(date).isoformat()
     delete_task(username, entry_date, task_index)
     return redirect(
-        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+        url_for("pages.reflect", username=username, date=entry_date) + "#tasks"
     )
