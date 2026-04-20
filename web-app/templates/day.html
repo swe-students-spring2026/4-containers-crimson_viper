@@ -141,6 +141,9 @@ textForm.addEventListener('submit', async (e) => {
     const formData = new FormData(textForm);
     const response = await fetch("/upload-text", { method: "POST", body: formData });
     const result = await response.json();
+    // need to clear text box
+    const textarea = textForm.querySelector('textarea[name="transcript"]');
+    textarea.value = '';
     startPolling(result.job_id);
     alert('Text submitted! Processing...');
 });

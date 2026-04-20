@@ -113,24 +113,6 @@ def home():
         date=current_day,
     )
 
-
-@page_bp.route("/day")
-@login_required
-def today():
-    """Render day.html for today or selected date."""
-    username = current_user.username
-    selected_date = request.args.get("date") or str(dt_date.today())
-    normalized_date, entry, prev_date, next_date = _day_context(username, selected_date)
-    return render_template(
-        "day.html",
-        date=normalized_date,
-        entry=entry,
-        username=username,
-        prev_date=prev_date,
-        next_date=next_date,
-    )
-
-
 @page_bp.route("/day")
 @login_required
 def day():
@@ -273,7 +255,7 @@ def create_entry_page():
         entry_data["timestamp"] = timestamp
 
     create_entry(username, entry_date, entry_data)
-    return redirect(url_for("pages.today", username=username, date=entry_date))
+    return redirect(url_for("pages.day", username=username, date=entry_date))
 
 
 @page_bp.route("/entries/<date>/<int:entry_index>/edit", methods=["POST"])
@@ -296,7 +278,7 @@ def update_entry_page(date, entry_index):
         updated_data["timestamp"] = timestamp
 
     update_entry(username, entry_date, entry_index, updated_data)
-    return redirect(url_for("pages.today", username=username, date=entry_date))
+    return redirect(url_for("pages.day", username=username, date=entry_date))
 
 
 @page_bp.route("/entries/<date>/<int:entry_index>/delete", methods=["POST"])
@@ -326,7 +308,7 @@ def create_task_page():
             {"title": title, "completed": False, "deadline": deadline_value},
         )
     return redirect(
-        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username, date=entry_date) + "#tasks"
     )
 
 
@@ -344,7 +326,7 @@ def update_task_page(date, task_index):
     }
     edit_task(username, entry_date, task_index, updated_task)
     return redirect(
-        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username, date=entry_date) + "#tasks"
     )
 
 
@@ -367,7 +349,7 @@ def toggle_task_page(date, task_index):
         edit_task(username, entry_date, task_index, updated_task)
 
     return redirect(
-        url_for("pages.today", username=username, date=entry_date) + "#tasks"
+        url_for("pages.day", username=username, date=entry_date) + "#tasks"
     )
 
 
