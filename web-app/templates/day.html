@@ -19,7 +19,7 @@
 
             <a class="secondary-link"
                 style="font-style: normal; text-decoration: none;"
-                href="{{ url_for('pages.day', date=date, mode='prompt') }}">
+                href="{{ url_for('pages.day', username=username, date=date, mode='prompt') }}">
                 Change Prompt
             </a>
         </section>
@@ -75,10 +75,10 @@
 
     </main>
 
-   <nav class="bottom-nav">
-        <a href="{{ url_for('pages.home') }}" class="nav-item">Home</a>
-        <a href="{{ url_for('pages.today', date=date) }}" class="nav-item active">Today</a>
-        <a href="{{ url_for('pages.reflect', date=date, mode='prompt') }}" class="nav-item">History</a>
+    <nav class="bottom-nav">
+        <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
+        <a href="{{ url_for('pages.day', username=username)}}" class="nav-item active">Today</a>
+        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}" class="nav-item">History</a>
     </nav>
 </div>
 

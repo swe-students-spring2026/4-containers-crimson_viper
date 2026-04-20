@@ -1,9 +1,10 @@
 """Has the page routes for the app."""
-
+import random
 from datetime import date as dt_date, datetime, timedelta
 from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
+from models.db import db
 from services.entry_service import (
     add_task,
     create_entry,
@@ -130,51 +131,107 @@ def today():
     )
 
 
-@page_bp.route("/day/<date>")
+@page_bp.route("/day")
 @login_required
-def day(date):
-    """Render day.html for a specific date."""
+def day():
+    """
+    Renders day.html with prompt functionality
+    """
     username = current_user.username
-    normalized_date, entry, prev_date, next_date = _day_context(username, date)
+    selected_date = request.args.get("date") or str(dt_date.today())
+    mode = request.args.get("mode", "prompt")
+    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
+    existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
+
+    selected_prompt = random.choice(PROMPTS)
+
+    if mode == "continue" and existing_entry and not selected_prompt:
+        current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
+        transcript_value = existing_entry.get("transcript", "")
+    else:
+        current_prompt = selected_prompt or PROMPTS[0]
+        transcript_value = ""
+
+        existing_entry = None
+        existing_entry_index = None
+
+    prompt_choices = _build_prompt_choices(current_prompt)
+
+    audio_jobs = list(
+        db.audio_jobs.find(
+            {
+                "username": username,
+                "date": selected_date,
+            }
+        ).sort("created_at", -1)
+    )
+
+    is_today = selected_date == dt_date.today().isoformat()
+
     return render_template(
         "day.html",
-        date=normalized_date,
-        entry=entry,
         username=username,
+        date=selected_date,
         prev_date=prev_date,
         next_date=next_date,
+        is_today=is_today,
+        entry=day_doc,
+        mode=mode,
+        prompts=prompt_choices,
+        current_prompt=current_prompt,
+        existing_entry=existing_entry,
+        existing_entry_index=existing_entry_index,
+        transcript_value=transcript_value,
+        audio_jobs=audio_jobs,
     )
 
 
 @page_bp.route("/reflect")
 @login_required
 def reflect():
-    """Render reflect.html."""
+    """
+    Renders reflect.html
+    """
     username = current_user.username
     selected_date = request.args.get("date") or str(dt_date.today())
     mode = request.args.get("mode", "prompt")
-    selected_date, day_doc, _, _ = _day_context(username, selected_date)
-    _, existing_entry = _get_prompt_entry(day_doc)
+    selected_date, day_doc, prev_date, next_date = _day_context(username, selected_date)
+    existing_entry_index, existing_entry = _get_prompt_entry(day_doc)
 
     selected_prompt = request.args.get("prompt")
 
     if mode == "continue" and existing_entry and not selected_prompt:
         current_prompt = existing_entry.get("prompt_text") or PROMPTS[0]
+        transcript_value = existing_entry.get("transcript", "")
         mood_score = existing_entry.get("mood_score", "")
         stress_score = existing_entry.get("stress_score", "")
     else:
         current_prompt = selected_prompt or PROMPTS[0]
+        transcript_value = ""
         mood_score = 5
         stress_score = ""
+        existing_entry = None
+        existing_entry_index = None
+
+    prompt_choices = _build_prompt_choices(current_prompt)
+    is_today = selected_date == dt_date.today().isoformat()
 
     return render_template(
         "reflect.html",
         username=username,
         date=selected_date,
         mode=mode,
+        prompts=prompt_choices,
         current_prompt=current_prompt,
+        existing_entry=existing_entry,
+        existing_entry_index=existing_entry_index,
+        transcript_value=transcript_value,
         mood_score=mood_score,
         stress_score=stress_score,
+        entry=day_doc,
+        prev_date=prev_date,
+        next_date=next_date,
+        is_today=is_today,
     )
 
 

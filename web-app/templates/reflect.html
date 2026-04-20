@@ -94,9 +94,9 @@
 
 
     <nav class="bottom-nav">
-        <a href="{{ url_for('pages.home', date=date) }}" class="nav-item">Home</a>
-        <a href="{{ url_for('pages.day', date=date) }}" class="nav-item">Today</a>
-        <a href="{{ url_for('pages.reflect', date=date, mode='prompt') }}"
+        <a href="{{ url_for('pages.home', username=username) }}" class="nav-item">Home</a>
+        <a href="{{ url_for('pages.day', username=username) }}" class="nav-item">Today</a>
+        <a href="{{ url_for('pages.reflect', username=username, date=date, mode='prompt') }}"
             class="nav-item active">History</a>
     </nav>
 </div>
