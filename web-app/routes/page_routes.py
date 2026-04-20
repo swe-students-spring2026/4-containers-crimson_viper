@@ -16,6 +16,7 @@ from services.entry_service import (
 )
 
 page_bp = Blueprint("pages", __name__)
+from models.db import db
 
 PROMPTS = [
     "What stayed with you most today?",
@@ -157,7 +158,7 @@ def day():
     prompt_choices = _build_prompt_choices(current_prompt)
 
     audio_jobs = list(
-        .audio_jobs.find(
+        db.audio_jobs.find(
             {
                 "username": username,
                 "date": selected_date,
